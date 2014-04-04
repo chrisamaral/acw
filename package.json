@@ -1,0 +1,28 @@
+{
+  "name": "acw",
+  "description": "ACW Site",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "debug": "*",
+    "express": "4.*",
+    "express-session": "*",
+    "cookie-parser": "*",
+    "body-parser": "*",
+
+    "passport": "*",
+    "passport-local": "*",
+    "passport-google": "*",
+    "connect-flash": "*",
+
+    "jade": "*",
+
+    "lodash": "*",
+    "bcrypt": "*",
+    "validator": "*",
+    "gm": "*",
+    "mkdirp": "*",
+    "path": "*",
+    "formidable": "*"
+  }
+}

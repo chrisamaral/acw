@@ -1,0 +1,46 @@
+.contentWrapper{
+  width: 95%;
+  margin: 0 auto;
+}
+.formLine{
+  margin: 0.5em 0;
+}
+
+.buttonLine{
+  margin-right: 1em;
+  margin-left: 1em;
+}
+#emailList>li:first-child, #telList>li:first-child{
+    color: green;
+    font-weight: bold;
+}
+input[type="password"]{
+    width: 20em;
+}
+.form-inline .form-control{
+    margin: 0 3px;
+}
+#telList .badge{
+    float: none;
+    margin-right: 0.5em;
+}
+
+#previewBox{
+    overflow-x: hidden;
+}
+#fileInputBox>progress{
+    height: 2em;
+    width: 100%;
+    margin: 5px 0;
+}
+.jcrop-holder{
+    display: inline-block;
+}
+.picContainer{
+    padding: 5px;
+    min-height: 200px;
+    overflow-x: hidden;
+}
+#oldpic{
+    max-width: 100%;
+}

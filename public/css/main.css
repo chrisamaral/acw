@@ -1,0 +1,84 @@
+html{
+	
+}
+body{
+	font-family: 'Droid Sans', sans-serif;
+	font-size: small;
+	background-color: white;
+}
+
+#mainNav{
+	background-color: #1D203C;
+}
+#mainNav .navbar-brand{
+	position: relative;
+}
+#mainNav .navbar-brand>.brandName{
+	padding-left: 40px;
+}
+#mainNav .navbar-brand>.brandLogo{
+	display: block;
+	position: absolute;
+	top: 0;
+	width: 32px;
+	height: 100%;
+	background: url(/img/acw.png) center no-repeat;
+	background-size: 32px 32px;
+}
+#mainFace{
+	text-align: center;
+}
+@media only screen and (max-device-width: 420px){
+	#mainFace .fullLogo{
+		background-size: 100% 250px  !important;
+	}
+}
+#mainFace .fullLogo{
+	height: 300px;
+	background: url(/img/fullLogo.png) center no-repeat transparent;
+}
+
+
+#mainNav .dropdown.open>a{
+	background-color: #0A0D24;
+}
+#loginPanel{
+	width: 80%;
+	max-width: 600px;
+	min-width: 300px;
+	margin: 1em auto;
+}
+#loginPanel>.panel-body>div{
+	margin: 10px 0;
+}
+
+#mainAlerts{
+	margin: 0 10%;
+}
+#navUser>.userName{
+	padding-left: 30px;
+}
+#navUser>.userAvatar{
+	display: block;
+	position: absolute;
+	top: 0; left: 8px;
+	width: 32px;
+	height: 100%;
+	line-height: 100%;
+}
+.userAvatar>span{
+	display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+.userAvatar>img{
+	height: 32px; width: 32px;
+	border: 1px solid #040513;
+	border-radius: 100%;
+}
+#userDropDown{
+	background-color: rgba(0,0,0,0.3);
+}
+#userDropDown .userName{
+	color: white !important;
+}

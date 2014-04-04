@@ -1,0 +1,18 @@
+[{
+  "name": "me",
+  "script": "/home/christian/me/app.js",
+  "port": 3000
+}
+,{
+  "name": "acw",
+  "script": "/home/christian/acw/index.js",
+  "instances": "2",
+  "port": 4000
+},
+{
+  "name": "blog",
+  "script": "/home/christian/ghost/index.js",
+  "instances": "2",
+  "port": 2368
+}]
+

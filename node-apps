@@ -1,0 +1,62 @@
+#!/bin/bash
+
+PARENT_EXEC='/usr/local/bin/pm2'
+FOREVER_EXEC='/usr/local/bin/forever'
+PARENT_EXEC=$FOREVER_EXEC
+
+###############
+
+# REDHAT chkconfig header
+
+# chkconfig: - 58 74
+# description: node-apps is the script for starting a series of node apps on boot
+### BEGIN INIT INFO
+# Provides: node
+# Required-Start:    $network $remote_fs $local_fs
+# Required-Stop:     $network $remote_fs $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: start and stop node
+# Description: Node process for app
+### END INIT INFO
+
+start_app (){
+
+    cd /home/christian/acw
+	pm2 start index.js  
+
+}
+
+stop_app (){
+    pm2 stop all
+}
+
+restart_app (){
+	pm2 restart all
+}
+
+app_status (){
+	pm2 list
+}
+
+case "$1" in
+    start)
+        start_app
+    ;;
+
+    stop)
+        stop_app
+    ;;
+
+    restart)
+        restart_app
+    ;;
+
+    status)
+        app_status
+    ;;
+
+    *)
+        echo "Usage: /etc/init.d/node-apps {start|stop|restart|status}"
+    ;;
+esac
