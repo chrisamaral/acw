@@ -13,6 +13,7 @@
     "passport": "*",
     "passport-local": "*",
     "passport-google": "*",
+    "passport-yahoo": "*",
     "connect-flash": "*",
 
     "jade": "*",
@@ -22,7 +23,7 @@
     "validator": "*",
     "gm": "*",
     "mkdirp": "*",
-    "path": "*",
-    "formidable": "*"
+    "formidable": "*",
+    "mysql": "*"
   }
 }

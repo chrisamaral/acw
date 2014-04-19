@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 PARENT_EXEC='/usr/local/bin/pm2'
 FOREVER_EXEC='/usr/local/bin/forever'

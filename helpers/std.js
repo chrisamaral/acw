@@ -21,6 +21,6 @@ exports.serveIt = function (view, page, req, res) {
         info: req.flash('info')
     };
 
-    res.locals.deps = pageDeps[page] || {};
+    res.locals.deps = pageDeps[page] || pageDeps.defaults || {};
     res.render(view);
 };
