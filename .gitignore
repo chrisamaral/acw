@@ -1,2 +1,5 @@
+config/development
 node_modules/*
-media/*
+public/media/*
+.idea/*
+*.iml

@@ -7,7 +7,7 @@ cd ~/me
 pm2 start me.js
 
 cd ~/acw
-pm2 start acw.js -i 2
+pm2 start acw.js #-i 2
 
 cd ~/ghost
 pm2 start index.js

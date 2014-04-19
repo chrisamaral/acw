@@ -73,7 +73,7 @@ body{
 }
 .userAvatar>img{
 	height: 32px; width: 32px;
-	border: 1px solid #040513;
+	border: 1px solid #2E2E2E;
 	border-radius: 100%;
 }
 #userDropDown{

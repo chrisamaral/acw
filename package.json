@@ -9,20 +9,19 @@
     "express-session": "*",
     "cookie-parser": "*",
     "body-parser": "*",
-
     "passport": "*",
     "passport-local": "*",
     "passport-google": "*",
+    "passport-yahoo": "*",
     "connect-flash": "*",
-
     "jade": "*",
-
     "lodash": "*",
     "bcrypt": "*",
     "validator": "*",
+    "zxcvbn": "*",
     "gm": "*",
     "mkdirp": "*",
-    "path": "*",
-    "formidable": "*"
+    "formidable": "*",
+    "mysql": "*"
   }
 }
