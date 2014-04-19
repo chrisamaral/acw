@@ -1,5 +1,5 @@
 "use strict";
-var pageDeps = require('../config/pageDependencies.js');
+var pageDeps = require('../config/pageDependencies.js') || {};
 exports.ensureAuthenticated = function (req, res, next) {
     if (req.isAuthenticated()) {
         res.setHeader('Cache-Control', 'no-cache');
@@ -21,6 +21,17 @@ exports.serveIt = function (view, page, req, res) {
         info: req.flash('info')
     };
 
-    res.locals.deps = pageDeps[page] || pageDeps.defaults || {};
+    var dependencyLoader = "",
+        deps = pageDeps[page] || pageDeps.defaults || {};
+
+    if(deps.js && deps.js.length){
+        dependencyLoader += "LazyLoad.js(['"+deps.js.join("', '")+"']);\n";
+    }
+
+    if(deps.css && deps.css.length){
+        dependencyLoader += "LazyLoad.css(['"+deps.css.join("', '")+"']);\n";
+    }
+
+    res.locals.dependencyLoader = ((dependencyLoader.length) ? dependencyLoader : null);
     res.render(view);
 };

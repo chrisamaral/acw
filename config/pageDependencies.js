@@ -9,7 +9,9 @@ var defaults = {
     	"//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js",
     	"//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"
 	],css: [
-		"//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css"
+		"//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css",
+		"//fonts.googleapis.com/css?family=Droid+Sans:400,700",
+		"/css/main.css"
 	]
 };
 exports.defaults = defaults;

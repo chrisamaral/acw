@@ -4,16 +4,10 @@ html
 		meta(http-equiv="Content-type", content="text/html; charset=utf-8")
 		meta(name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no")
 		title ACW Automação e Sistemas
-		link(rel="stylesheet", href="/css/main.css")
 		link(rel="shortcut icon", href="/icons/fav.ico")
-		link(href="//fonts.googleapis.com/css?family=Droid+Sans:400,700", rel="stylesheet", type="text/css", async=true)
 		script(src="/js/ext/lazyload/lazyload.min.js")
-		if deps && deps.js && deps.js.length
-			script 
-				| LazyLoad.js("#{deps.js}".split(','));
-		if deps && deps.css && deps.css.length
-			script 
-				| LazyLoad.css("#{deps.css}".split(','));
+		if dependencyLoader
+			script #{dependencyLoader}
 	body
 		nav(id="mainNav", role="navigation", class="navbar navbar-default navbar-static-top navbar-inverse")
 			div.container
