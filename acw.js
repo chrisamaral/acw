@@ -15,8 +15,6 @@ var bcrypt = require('bcrypt'),
     GoogleStrategy = require('passport-google').Strategy,
     YahooStrategy = require('passport-yahoo').Strategy;
 
-
-
 var app = express();
 
 app.use(express.static(__dirname + '/public'));
@@ -91,11 +89,13 @@ function extEmailLogin (identifier, profile, done) {
 }
 passport.use(new GoogleStrategy({
     returnURL: etc.httpProtocol + '://' + etc.DOMAIN + '/auth/google/return',
-    realm: etc.httpProtocol + '://' + etc.DOMAIN + '/'
+    realm: etc.httpProtocol + '://' + etc.DOMAIN + '/',
+    stateless: true
 }, extEmailLogin));
 passport.use(new YahooStrategy({
     returnURL: etc.httpProtocol + '://' + etc.DOMAIN + '/auth/yahoo/return',
-    realm: etc.httpProtocol + '://' + etc.DOMAIN + '/'
+    realm: etc.httpProtocol + '://' + etc.DOMAIN + '/',
+    stateless: true
 }, extEmailLogin));
 passport.serializeUser(function (user, done) {
     done(null, user.id);
@@ -132,12 +132,38 @@ app.set('view engine', 'jade');
 app.get('/', function (req, res) {
     helpers.serveIt('home', '/',  req, res);
 });
+
+/*
+PROXY
+app.get('/auth/google', function (req, res, next) {
+    function goDie(req, res){
+        req.flash('error', 'Falha na autenticação');
+        return res.redirect('/login');
+    }
+    passport.authenticate('google', function (err, user, info) {
+        if (err) {
+            return goDie(req, res);
+        }
+        if (!user) {
+            return res.redirect('/login');
+        }
+        req.logIn(user, function (err) {
+            if (err) {
+                return goDie(req, res);
+            }
+            return res.redirect('/');
+        });
+    })(req, res, next);
+});
+*/
+
 app.get('/auth/google',
     passport.authenticate('google', {
         successRedirect: '/',
         failureRedirect: '/login',
         failureFlash: true
     }));
+
 app.get('/auth/google/return',
     passport.authenticate('google', {
         successRedirect: '/',
@@ -156,6 +182,7 @@ app.get('/auth/yahoo/return',
         failureRedirect: '/login',
         failureFlash: true
     }));
+
 app.get('/login', function (req, res) {
     helpers.serveIt('login', 'login', req, res);
 });

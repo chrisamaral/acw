@@ -6,8 +6,12 @@ html
 		title ACW Automação e Sistemas
 		link(rel="shortcut icon", href="/icons/fav.ico")
 		script(src="/js/ext/lazyload/lazyload.min.js")
-		if dependencyLoader
-			script #{dependencyLoader}
+		if dependencies && dependencies.js
+			script LazyLoad.js(#{dependencies.js});
+		if dependencies && dependencies.css
+			each css in dependencies.css
+				link(href=css, rel='stylesheet', type='text/css', media='all')
+
 	body
 		nav(id="mainNav", role="navigation", class="navbar navbar-default navbar-static-top navbar-inverse")
 			div.container

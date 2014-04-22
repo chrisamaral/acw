@@ -5,9 +5,11 @@ var resources;
 function Resources (mysql) {
     var fs = require('fs');
     this.dbConfig = require('./config/db.js');
+    this.ENV = fs.existsSync('./config/development') ? 'development' : 'production';
+
     this.httpProtocol = 'http';
-    this.DOMAIN = 'acwautosis.info';
-    this.ENV = (fs.existsSync('./config/development'))?'development':'production';
+    this.DOMAIN = this.ENV === 'production' ? 'acwautosis.info' : 'acw.dev';
+
     this.waitTime = 2;
 
     this.mysql = mysql;

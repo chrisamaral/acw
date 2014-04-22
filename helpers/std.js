@@ -1,15 +1,18 @@
 "use strict";
-var pageDeps = require('../config/pageDependencies.js') || {};
+var pageDeps = require('../config/pageDependencies.js') || {},
+    _ = require('lodash');
 exports.ensureAuthenticated = function (req, res, next) {
+
     if (req.isAuthenticated()) {
         res.setHeader('Cache-Control', 'no-cache');
-        next();
-    } else {
-        if (!req.xhr) {
-            return res.redirect('/login');
-        }
-        req.status(403);
+        return next();
     }
+
+    if (!req.xhr) {
+        return res.redirect('/login');
+    }
+
+    req.status(403);
 };
 
 exports.serveIt = function (view, page, req, res) {
@@ -21,17 +24,16 @@ exports.serveIt = function (view, page, req, res) {
         info: req.flash('info')
     };
 
-    var dependencyLoader = "",
-        deps = pageDeps[page] || pageDeps.defaults || {};
+    var deps = pageDeps[page] || pageDeps.defaults || {js: [], css: []},
+        n_deps = {
+            js: ((deps.js && deps.js.length)
+                ? "['" + deps.js.concat().join("', '") + "']"
+                : null),
+            css: ((deps.css && deps.css.length)
+                ? deps.css.concat()
+                : null)
+        };
 
-    if(deps.js && deps.js.length){
-        dependencyLoader += "LazyLoad.js(['"+deps.js.join("', '")+"']);\n";
-    }
-
-    if(deps.css && deps.css.length){
-        dependencyLoader += "LazyLoad.css(['"+deps.css.join("', '")+"']);\n";
-    }
-
-    res.locals.dependencyLoader = ((dependencyLoader.length) ? dependencyLoader : null);
+    res.locals.dependencies = n_deps;
     res.render(view);
 };

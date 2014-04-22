@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+
     "debug": "*",
     "express": "4.*",
     "express-session": "*",
@@ -16,6 +17,7 @@
     "connect-flash": "*",
     "jade": "*",
     "lodash": "*",
+    "async": "*",
     "bcrypt": "*",
     "validator": "*",
     "zxcvbn": "*",
