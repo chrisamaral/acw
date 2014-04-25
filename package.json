@@ -3,6 +3,12 @@
   "description": "ACW Site",
   "version": "0.0.1",
   "private": true,
+  "main": "acw.js",
+  "repository": {
+    "type": "bitbucket",
+    "url": "https://bitbucket.org/darthcas/acw"
+  },
+  "homepage": "http://acwautosis.info",
   "dependencies": {
 
     "debug": "*",
@@ -10,6 +16,7 @@
     "express-session": "*",
     "cookie-parser": "*",
     "body-parser": "*",
+    "authorized": "*",
     "passport": "*",
     "passport-local": "*",
     "passport-google": "*",

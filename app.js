@@ -2,26 +2,28 @@
 require('debug');
 var resources;
 
-function Resources (mysql) {
+function setVariables() {
     var fs = require('fs');
     this.dbConfig = require('./config/db.js');
     this.ENV = fs.existsSync('./config/development') ? 'development' : 'production';
-
     this.httpProtocol = 'http';
     this.DOMAIN = this.ENV === 'production' ? 'acwautosis.info' : 'acw.dev';
-
-    this.waitTime = 2;
-
-    this.mysql = mysql;
     console.log("ENVIROMENT: " + this.ENV);
     console.log("DOMAINNAME: " + this.DOMAIN);
 }
-Resources.prototype.handleDbError = function (err) {
+function Base(mysql) {
+    setVariables.call(this);
+    this.waitTime = 2;
+    this.mysql = mysql;
+}
+
+Base.prototype.handleDbError = function (err) {
     this.db.connAlive = false;
     setTimeout(this.startConnection.bind(this), this.waitTime * 1000);
     console.log('error when connecting to db:', err.code, 'will try again in', this.waitTime, 'seconds');
 };
-Resources.prototype.startConnection = function(){
+
+Base.prototype.startConnection = function () {
     console.log('connecting to db...');
     this.db = this.mysql.createConnection(this.dbConfig);
     this.db.connAlive = false;
@@ -30,7 +32,7 @@ Resources.prototype.startConnection = function(){
         if (!err) {
             this.db.connAlive = true;
             console.log('... connected!');
-        }else{
+        } else {
             this.handleDbError(err);
         }
     }.bind(this));
@@ -52,7 +54,8 @@ Resources.prototype.startConnection = function(){
 
 module.exports = function (mysql) {
     if (mysql) {
-        resources = new Resources(mysql);
+        resources = new Base(mysql);
+        resources.helpers = require('./helpers/std.js');
         resources.startConnection();
     }
     return resources;

@@ -1,6 +1,4 @@
-var _ = require('lodash');
-var etc = require('../resources.js')();
-var jsPath = '/js/build';
+var etc = require('../app.js')(), jsPath = '/js/build', pages = {};
 
 if (etc.ENV === 'development') {
     jsPath = '/js/src';
@@ -16,9 +14,8 @@ var defaults = {
         "/css/main.css"
     ]
 };
-var pages = {};
-exports.defaults = defaults;
 
+exports.defaults = defaults;
 pages.user = {
     js: [jsPath + '/user.js', jsPath + '/user.avatar.js'],
     css: ['/css/user.css']
