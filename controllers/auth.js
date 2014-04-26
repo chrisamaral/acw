@@ -1,18 +1,19 @@
 "use strict";
 var etc = require('../app.js')();
 
-exports.init = function () {
+function setupAuth(){
     var bcrypt = require('bcrypt'),
         LocalStrategy = require('passport-local').Strategy,
         GoogleStrategy = require('passport-google').Strategy,
         YahooStrategy = require('passport-yahoo').Strategy;
 
-    etc.authorized = require('authorized');
+    etc.passport = require('passport');
     etc.passport.use(new LocalStrategy({usernameField: 'email'}, function (email, password, done) {
         etc.db.query('SELECT user.id, user.short_name, user.full_name, user.avatar, user.password ' +
                 ' FROM  acw.user_email ' +
-                ' JOIN acw.user ON user.id = user_email.user ' +
-                ' WHERE user_email.email = ? AND user.activated = 1 AND user.password IS NOT NULL ',
+                ' JOIN acw.active_user ON active_user.user = user_email.user ' +
+                ' JOIN acw.user ON user.id = active_user.user ' +
+                ' WHERE user_email.email = ? AND user.password IS NOT NULL ',
             [email],
             function (err, rows) {
                 if (err) {
@@ -50,8 +51,9 @@ exports.init = function () {
 
         etc.db.query(' SELECT user.id, user.short_name, user.full_name, user.avatar ' +
                 ' FROM  acw.user_email ' +
-                ' JOIN acw.user ON user.id = user_email.user ' +
-                ' WHERE user_email.email IN ( ? ) AND user.activated = 1 ' +
+                ' JOIN acw.active_user ON active_user.user = user_email.user ' +
+                ' JOIN acw.user ON user.id = active_user.user ' +
+                ' WHERE user_email.email IN ( ? ) ' +
                 ' GROUP BY user.id LIMIT 1 ',
             [emails],
             function (err, rows) {
@@ -97,39 +99,66 @@ exports.init = function () {
 
     etc.express.use(etc.passport.initialize());
     etc.express.use(etc.passport.session());
+}
+exports.init = function (done) {
+    etc.authorized = require('authorized');
+    require('../lib/role.loader.js')(function(){
+        setupAuth();
+        done();
+    });
 };
 
-exports.listen = function () {
-
-    function HandleExternalLogin(req, res, next) {
-        var authProvider = this.provider;
-        function goDie(req, res) {
+function HandleExternalLogin(req, res, next) {
+    var authProvider = this.provider;
+    function goDie(req, res) {
+        if (authProvider !== 'local') {
             req.flash('error', 'Não foi possível verificar suas credenciais com o ' +
                 authProvider.charAt(0).toUpperCase() + authProvider.slice(1) + '.');
+        } else {
+            req.flash('error', 'Erro no login.');
+        }
+        return res.redirect('/login');
+    }
+
+    etc.passport.authenticate(authProvider, function (err, user, info) {
+        if (err) {
+            return goDie(req, res);
+        }
+        if (!user) {
+            if(info && info.message) {
+                req.flash('error', info.message);
+            }
             return res.redirect('/login');
         }
-
-        etc.passport.authenticate(authProvider, function (err, user, info) {
+        req.logIn(user, function (err) {
             if (err) {
                 return goDie(req, res);
             }
-            if (!user) {
-                return res.redirect('/login');
+            var to = '/';
+            if (req.session.redirect_to) {
+                to = req.session.redirect_to;
+                delete req.session.redirect_to;
             }
-            req.logIn(user, function (err) {
-                if (err) {
-                    return goDie(req, res);
-                }
-                return res.redirect('/');
-            });
-        })(req, res, next);
-    }
+            res.redirect(to);
+        });
+    })(req, res, next);
+}
+
+exports.listen = function () {
+    etc.express.get('/login', function (req, res) {
+        etc.helpers.serveIt('login', 'login', req, res);
+    });
+
+    etc.express.get('/logout', function (req, res) {
+        req.logout();
+        res.redirect('/');
+    });
 
     etc.express.get('/auth/google', HandleExternalLogin.bind({provider: 'google'}));
     etc.express.get('/auth/google/return', HandleExternalLogin.bind({provider: 'google'}));
     etc.express.get('/auth/yahoo', HandleExternalLogin.bind({provider: 'yahoo'}));
     etc.express.get('/auth/yahoo/return', HandleExternalLogin.bind({provider: 'yahoo'}));
-
+    etc.express.post('/login', HandleExternalLogin.bind({provider: 'local'}));
     /*
         etc.express.get('/auth/google',
             etc.passport.authenticate('google', {
@@ -156,20 +185,12 @@ exports.listen = function () {
                 failureRedirect: '/login',
                 failureFlash: true
             }));
+
+        etc.express.post('/login',
+            etc.passport.authenticate('local', {
+                successRedirect: '/',
+                failureRedirect: '/login',
+                failureFlash: true
+            }));
     */
-
-    etc.express.get('/login', function (req, res) {
-        etc.helpers.serveIt('login', 'login', req, res);
-    });
-
-    etc.express.get('/logout', function (req, res) {
-        req.logout();
-        res.redirect('/');
-    });
-    etc.express.post('/login',
-        etc.passport.authenticate('local', {
-            successRedirect: '/',
-            failureRedirect: '/login',
-            failureFlash: true
-        }));
 };

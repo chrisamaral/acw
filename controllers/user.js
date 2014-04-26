@@ -9,7 +9,7 @@ var etc = require('../app.js')(),
     path = require('path'),
     formidable = require('formidable');
 
-etc.express.get('/user/avatar', etc.helpers.ensureAuthenticated, function (req, res) {
+etc.express.get('/user/avatar', etc.authorized.can('access private page'), function (req, res) {
     if (req.user.avatar) {
         res.send({
             full: '/media/u/' + req.user.id + '/1/' + req.user.avatar,
@@ -22,7 +22,7 @@ etc.express.get('/user/avatar', etc.helpers.ensureAuthenticated, function (req, 
         });
     }
 });
-etc.express.post('/user/avatar', etc.helpers.ensureAuthenticated, function (req, res) {
+etc.express.post('/user/avatar', etc.authorized.can('access private page'), function (req, res) {
     var tmpFile = null, form = new formidable.IncomingForm();
     function answerIt(status, txt) {
         if (tmpFile) {
@@ -77,14 +77,14 @@ etc.express.post('/user/avatar', etc.helpers.ensureAuthenticated, function (req,
         });
     });
 });
-etc.express.get('/user/name', etc.helpers.ensureAuthenticated, function (req, res) {
+etc.express.get('/user/name', etc.authorized.can('access private page'), function (req, res) {
     res.json({
         short_name: req.user.short_name,
         full_name: req.user.full_name,
     });
 });
 
-etc.express.post('/user/name', etc.helpers.ensureAuthenticated, function (req, res) {
+etc.express.post('/user/name', etc.authorized.can('access private page'), function (req, res) {
 
     if (!validator.isLength(req.body.short_name, 3) || !validator.isLength(req.body.full_name, 3)) {
         res.status(400);
@@ -105,7 +105,7 @@ etc.express.post('/user/name', etc.helpers.ensureAuthenticated, function (req, r
             res.send(200);
         });
 });
-etc.express.get('/user/tel', etc.helpers.ensureAuthenticated, function (req, res) {
+etc.express.get('/user/tel', etc.authorized.can('access private page'), function (req, res) {
     etc.db.query(' SELECT user_tel.id, user_tel.country, user_tel.area, user_tel.number ' +
         ' FROM acw.user_tel ' +
         ' WHERE user_tel.user = ? ' +
@@ -130,7 +130,7 @@ etc.express.get('/user/tel', etc.helpers.ensureAuthenticated, function (req, res
             res.json(tels);
         });
 });
-etc.express.post('/user/tel', etc.helpers.ensureAuthenticated, function (req, res) {
+etc.express.post('/user/tel', etc.authorized.can('access private page'), function (req, res) {
     if (
         !(
             validator.isLength(req.body.country, 1)
@@ -159,7 +159,7 @@ etc.express.post('/user/tel', etc.helpers.ensureAuthenticated, function (req, re
             res.send(200);
         });
 });
-etc.express.delete('/user/tel', etc.helpers.ensureAuthenticated, function (req, res) {
+etc.express.delete('/user/tel', etc.authorized.can('access private page'), function (req, res) {
 
     etc.db.query(' DELETE FROM acw.user_tel WHERE user_tel.user = ? AND user_tel.id = ? ',
         [req.user.id, req.body.tel],
@@ -173,7 +173,7 @@ etc.express.delete('/user/tel', etc.helpers.ensureAuthenticated, function (req, 
         });
 });
 
-etc.express.get('/user/email', etc.helpers.ensureAuthenticated, function (req, res) {
+etc.express.get('/user/email', etc.authorized.can('access private page'), function (req, res) {
     etc.db.query(' SELECT user_email.email ' +
         ' FROM acw.user_email ' +
         ' WHERE user_email.user = ? ' +
@@ -199,7 +199,7 @@ etc.express.get('/user/email', etc.helpers.ensureAuthenticated, function (req, r
         });
 });
 
-etc.express.post('/user/email', etc.helpers.ensureAuthenticated, function (req, res) {
+etc.express.post('/user/email', etc.authorized.can('access private page'), function (req, res) {
     if (!validator.isEmail(req.body.email)) {
         res.status(400);
         return res.send('Email inválido.');
@@ -215,7 +215,7 @@ etc.express.post('/user/email', etc.helpers.ensureAuthenticated, function (req, 
         });
 });
 
-etc.express.delete('/user/email', etc.helpers.ensureAuthenticated, function (req, res) {
+etc.express.delete('/user/email', etc.authorized.can('access private page'), function (req, res) {
     function actuallyDelete() {
         etc.db.query(' DELETE FROM acw.user_email WHERE user_email.user = ? AND user_email.email = ? ',
             [req.user.id, req.body.email],
@@ -246,7 +246,7 @@ etc.express.delete('/user/email', etc.helpers.ensureAuthenticated, function (req
             actuallyDelete();
         });
 });
-etc.express.post('/user/password', etc.helpers.ensureAuthenticated, function (req, res) {
+etc.express.post('/user/password', etc.authorized.can('access private page'), function (req, res) {
 
     if (!validator.isLength(req.body.newPassword, 1) || zxcvbn(req.body.newPassword) < 3) {
         res.status(400);
@@ -322,6 +322,6 @@ etc.express.post('/user/password', etc.helpers.ensureAuthenticated, function (re
             res.send(400);
         });
 });
-etc.express.get('/user', etc.helpers.ensureAuthenticated, function (req, res) {
+etc.express.get('/user', etc.authorized.can('access private page'), function (req, res) {
     etc.helpers.serveIt('user', 'user', req, res);
 });

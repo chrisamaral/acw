@@ -16,6 +16,9 @@ exports.ensureAuthenticated = function (req, res, next) {
 };
 
 exports.serveIt = function (view, page, req, res) {
+    if (req.privatePage) {
+        res.setHeader('Cache-Control', 'no-cache');
+    }
     page = (page === '/') ? null : page;
 
     function setLocals(title) {

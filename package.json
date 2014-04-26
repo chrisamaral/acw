@@ -21,6 +21,7 @@
     "passport-local": "*",
     "passport-google": "*",
     "passport-yahoo": "*",
+    "connect-ensure-login": "*",
     "connect-flash": "*",
     "jade": "*",
     "lodash": "*",

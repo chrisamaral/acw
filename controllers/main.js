@@ -11,7 +11,6 @@ var express = require('express'),
     customAuth;
 
 etc.express = express();
-etc.passport = require('passport');
 etc.express.use(express.static(__dirname + '/public'));
 etc.express.use(bodyParser());
 etc.express.use(cookieParser());
@@ -26,13 +25,44 @@ etc.express.use(connetFlash());
 etc.express.set('view engine', 'jade');
 
 customAuth = require('./auth.js');
-customAuth.init();
+customAuth.init(function(){
+    etc.express.get('/', function (req, res) {
+        etc.helpers.serveIt('home', '/',  req, res);
+    });
 
-etc.express.get('/', function (req, res) {
-    etc.helpers.serveIt('home', '/',  req, res);
+    // adicionar rotas de login
+    customAuth.listen();
+    require('./user.js');
+    require('./admin.js');
+
+    etc.express.use(function(req, res, next){
+        res.status(404);
+        res.render('errors/404');
+    });
+
+    etc.express.use(function(err, req, res, next) {
+        if (err instanceof etc.authorized.UnauthorizedError === false) {
+            res.status(500);
+            return res.send(err);
+        }
+
+        if(!req.user) {
+            req.session.redirect_to = req.originalUrl;
+            return res.redirect('/login');
+        }
+
+        if (req.xhr) {
+            return res.send(401);
+        }
+
+        res.status(401);
+        res.render('errors/401');
+
+    });
+    /*etc.express.use(function(err, req, res, next) {
+        res.status(500);
+        res.send(err);
+    });*/
+    etc.express.listen(4000);
 });
 
-// adicionar rotas de login
-customAuth.listen();
-require('./user.js');
-etc.express.listen(4000);
