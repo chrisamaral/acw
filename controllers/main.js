@@ -8,10 +8,12 @@ var express = require('express'),
     expressSession = require('express-session'),
     XSession = require('../lib/xsession.js')(expressSession),
     sessMaxAge = 1000 * 60 * 60 * 24,
-    customAuth;
+    customAuth,
+    path = require('path');
 
 etc.express = express();
-etc.express.use(express.static(__dirname + '/public'));
+var pub_dir = path.normalize(__dirname + "/..") + '/public';
+etc.express.use(express.static(pub_dir));
 etc.express.use(bodyParser());
 etc.express.use(cookieParser());
 etc.express.use(expressSession({
@@ -25,7 +27,7 @@ etc.express.use(connetFlash());
 etc.express.set('view engine', 'jade');
 
 customAuth = require('./auth.js');
-customAuth.init(function(){
+customAuth.init(function () {
     etc.express.get('/', function (req, res) {
         etc.helpers.serveIt('home', '/',  req, res);
     });
@@ -35,18 +37,18 @@ customAuth.init(function(){
     require('./user.js');
     require('./admin.js');
 
-    etc.express.use(function(req, res, next){
+    etc.express.use(function (req, res, next) {
         res.status(404);
         res.render('errors/404');
     });
 
-    etc.express.use(function(err, req, res, next) {
+    etc.express.use(function (err, req, res, next) {
         if (err instanceof etc.authorized.UnauthorizedError === false) {
             res.status(500);
             return res.send(err);
         }
 
-        if(!req.user) {
+        if (!req.user) {
             req.session.redirect_to = req.originalUrl;
             return res.redirect('/login');
         }
