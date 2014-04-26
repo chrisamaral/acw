@@ -1,37 +1,64 @@
 "use strict";
-var pageDeps = require('../config/pageDependencies.js') || {};
+var pageDeps = require('../config/pages.js') || {},
+    etc = require('../app.js')();
 exports.ensureAuthenticated = function (req, res, next) {
+
     if (req.isAuthenticated()) {
         res.setHeader('Cache-Control', 'no-cache');
-        next();
-    } else {
-        if (!req.xhr) {
-            return res.redirect('/login');
-        }
-        req.status(403);
+        return next();
     }
+
+    if (!req.xhr) {
+        return res.redirect('/login');
+    }
+
+    req.status(403);
 };
 
 exports.serveIt = function (view, page, req, res) {
-    res.locals.url = req.url;
-    res.locals.user = req.user;
+    if (req.privatePage) {
+        res.setHeader('Cache-Control', 'no-cache');
+    }
+    page = (page === '/') ? null : page;
 
-    res.locals.messages = {
-        error: req.flash('error'),
-        info: req.flash('info')
-    };
+    function setLocals(title) {
+        res.locals.title = title;
+        res.locals.url = req.url;
+        res.locals.user = req.user;
 
-    var dependencyLoader = "",
-        deps = pageDeps[page] || pageDeps.defaults || {};
+        res.locals.messages = {
+            error: req.flash('error'),
+            info: req.flash('info')
+        };
 
-    if(deps.js && deps.js.length){
-        dependencyLoader += "LazyLoad.js(['"+deps.js.join("', '")+"']);\n";
+        var deps = pageDeps.defaults || {js: [], css: []};
+
+        if (page && page !== '/') {
+            deps = pageDeps[page] || deps;
+        }
+
+        var n_deps = {
+            js: ((deps.js && deps.js.length)
+                ? "['" + deps.js.concat().join("', '") + "']"
+                : null),
+            css: ((deps.css && deps.css.length)
+                ? deps.css.concat()
+                : null)
+        };
+
+        res.locals.dependencies = n_deps;
+        res.render(view);
     }
 
-    if(deps.css && deps.css.length){
-        dependencyLoader += "LazyLoad.css(['"+deps.css.join("', '")+"']);\n";
+    if (!page) {
+        return setLocals(null);
     }
 
-    res.locals.dependencyLoader = ((dependencyLoader.length) ? dependencyLoader : null);
-    res.render(view);
+    etc.db.query("SELECT title FROM acw.page WHERE id = ?", [page], function (err, rows) {
+        var title = null;
+        if (!err && rows[0] && rows[0].title) {
+            title = rows[0].title;
+        }
+        setLocals(title);
+    });
 };

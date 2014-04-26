@@ -3,11 +3,18 @@ html
 	head
 		meta(http-equiv="Content-type", content="text/html; charset=utf-8")
 		meta(name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no")
-		title ACW Automação e Sistemas
+		if title
+			title #{title}
+		else
+			title ACW Automação e Sistemas
 		link(rel="shortcut icon", href="/icons/fav.ico")
 		script(src="/js/ext/lazyload/lazyload.min.js")
-		if dependencyLoader
-			script #{dependencyLoader}
+		if dependencies && dependencies.js
+			script LazyLoad.js(#{dependencies.js});
+		if dependencies && dependencies.css
+			each css in dependencies.css
+				link(href=css, rel='stylesheet', type='text/css', media='all')
+
 	body
 		nav(id="mainNav", role="navigation", class="navbar navbar-default navbar-static-top navbar-inverse")
 			div.container
@@ -35,7 +42,6 @@ html
 								li
 									a(href="/sol/cases") Casos de Sucesso
 						if user
-
 							li#userDropDown.dropdown
 								a(id="navUser", href="#", class="dropdown-toggle", data-toggle="dropdown") 
 									if user.avatar

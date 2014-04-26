@@ -15,14 +15,13 @@ form(action='/login', method='post')
 					span.glyphicon.glyphicon-lock
 				input(name="password", type="password", class="form-control", placeholder="Senha", required=true)
 			div.text-center
+				button(type="submit", class="btn btn-default") Entrar
 				div.btn-group
-					input(type="submit", class="btn btn-default", value='Entrar') 
-					div.btn-group
-						button(type="button", class="btn btn-default dropdown-toggle", data-toggle="dropdown")
-							| Login Externo
-							span.caret
-						ul.dropdown-menu
-							li
-								a(href="/auth/google") Google
-							li
-								a(href="/auth/yahoo") Yahoo
+					button(type="button", class="btn btn-default dropdown-toggle", data-toggle="dropdown")
+						| Login Externo
+						span.caret
+					ul.dropdown-menu
+						li
+							a(href="/auth/google") Google
+						li
+							a(href="/auth/yahoo") Yahoo
