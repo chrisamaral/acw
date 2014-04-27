@@ -100,9 +100,10 @@ function setupAuth(){
     etc.express.use(etc.passport.initialize());
     etc.express.use(etc.passport.session());
 }
+
 exports.init = function (done) {
     etc.authorized = require('authorized');
-    require('../lib/role.loader.js')(function(){
+    require('../lib/role.loader.js')(function () {
         setupAuth();
         done();
     });
@@ -125,7 +126,7 @@ function HandleExternalLogin(req, res, next) {
             return goDie(req, res);
         }
         if (!user) {
-            if(info && info.message) {
+            if (info && info.message) {
                 req.flash('error', info.message);
             }
             return res.redirect('/login');
