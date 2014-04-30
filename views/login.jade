@@ -1,27 +1,27 @@
 include includes/head
 form(action='/login', method='post')
-	div(id="loginPanel", class="panel panel-primary")
-		div.panel-heading
-			h3.panel-title
-				| Preencha suas credenciais
-		div.panel-body
-			div.input-group
-				span.input-group-addon
-					span.glyphicon.glyphicon-user
-				input(name="email", type="email", class="form-control", placeholder="Email", required=true)
-		
-			div.input-group
-				span.input-group-addon 
-					span.glyphicon.glyphicon-lock
-				input(name="password", type="password", class="form-control", placeholder="Senha", required=true)
-			div.text-center
-				button(type="submit", class="btn btn-default") Entrar
-				div.btn-group
-					button(type="button", class="btn btn-default dropdown-toggle", data-toggle="dropdown")
-						| Login Externo
-						span.caret
-					ul.dropdown-menu
-						li
-							a(href="/auth/google") Google
-						li
-							a(href="/auth/yahoo") Yahoo
+    div(id="loginPanel", class="panel panel-primary")
+        div.panel-heading
+            h3.panel-title
+                | Preencha suas credenciais
+        div.panel-body
+            div.input-group
+                span.input-group-addon
+                    span.glyphicon.glyphicon-user
+                input(name="email", type="email", class="form-control", placeholder="Email", required=true)
+
+            div.input-group
+                span.input-group-addon
+                    span.glyphicon.glyphicon-lock
+                input(name="password", type="password", class="form-control", placeholder="Senha", required=true)
+            div.text-center
+                button(type="submit", class="btn btn-default") Entrar
+                div.btn-group
+                    button(type="button", class="btn btn-default dropdown-toggle", data-toggle="dropdown")
+                        | Login Externo
+                        span.caret
+                    ul.dropdown-menu
+                        li
+                            a(href="/auth/google") Google
+                        li
+                            a(href="/auth/yahoo") Yahoo

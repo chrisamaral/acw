@@ -13,7 +13,7 @@ etc.express.get('/user/avatar', etc.authorized.can('access private page'), funct
     if (req.user.avatar) {
         res.send({
             full: '/media/u/' + req.user.id + '/1/' + req.user.avatar,
-            thumb: '/media/u/' + req.user.id + '/thumb/' + req.user.avatar,
+            thumb: '/media/u/' + req.user.id + '/thumb/' + req.user.avatar
         });
     } else {
         res.send({
@@ -80,7 +80,7 @@ etc.express.post('/user/avatar', etc.authorized.can('access private page'), func
 etc.express.get('/user/name', etc.authorized.can('access private page'), function (req, res) {
     res.json({
         short_name: req.user.short_name,
-        full_name: req.user.full_name,
+        full_name: req.user.full_name
     });
 });
 

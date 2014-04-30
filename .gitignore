@@ -1,3 +1,4 @@
+npm-debug.log
 config/development
 node_modules/*
 public/media/*

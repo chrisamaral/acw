@@ -9,10 +9,10 @@ var express = require('express'),
     XSession = require('../lib/xsession.js')(expressSession),
     sessMaxAge = 1000 * 60 * 60 * 24,
     customAuth,
-    path = require('path');
+    path = require('path'),
+    pub_dir = path.normalize(__dirname + "/..") + '/public';
 
 etc.express = express();
-var pub_dir = path.normalize(__dirname + "/..") + '/public';
 etc.express.use(express.static(pub_dir));
 etc.express.use(bodyParser());
 etc.express.use(cookieParser());
@@ -28,6 +28,7 @@ etc.express.set('view engine', 'jade');
 
 customAuth = require('./auth.js');
 customAuth.init(function () {
+
     etc.express.get('/', function (req, res) {
         etc.helpers.serveIt('home', '/',  req, res);
     });
@@ -43,12 +44,15 @@ customAuth.init(function () {
     });
 
     etc.express.use(function (err, req, res, next) {
-        if (err instanceof etc.authorized.UnauthorizedError === false) {
+        console.log(err);
+        if (err && err instanceof etc.authorized.UnauthorizedError === false) {
             res.status(500);
-            return res.send(err);
+            return res.render('errors/500');
         }
 
-        if (!req.user) {
+        res.status(401);
+
+        if (!req.isAuthenticated()) {
             req.session.redirect_to = req.originalUrl;
             return res.redirect('/login');
         }
@@ -57,14 +61,9 @@ customAuth.init(function () {
             return res.send(401);
         }
 
-        res.status(401);
         res.render('errors/401');
-
     });
-    /*etc.express.use(function(err, req, res, next) {
-        res.status(500);
-        res.send(err);
-    });*/
+
     etc.express.listen(4000);
 });
 

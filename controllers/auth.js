@@ -103,7 +103,7 @@ function setupAuth(){
 
 exports.init = function (done) {
     etc.authorized = require('authorized');
-    require('../lib/role.loader.js')(function () {
+    require('../lib/authorization.js')(function () {
         setupAuth();
         done();
     });

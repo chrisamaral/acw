@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Teste</title>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" type="text/css" media="all" rel="stylesheet"  />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/react/0.10.0/JSXTransformer.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/react/0.10.0/react-with-addons.js"></script>
+    <script src="/js/ext/react-bootstrap.min.js"></script>
+</head>
+<body>
+    <!--<script type="text/jsx">
+          /** @jsx React.DOM */
+          React.renderComponent(
+            <h1>Hello, world!</h1>,
+            document.body
+          );
+    </script>-->
+    <script type="text/jsx">
+        /** @jsx React.DOM */
+        var key = 1, TabbedArea = ReactBootstrap.TabbedArea, TabPane = ReactBootstrap.TabPane;
+        function renderTabbedArea () {
+            var tabbedAreaInstance = (
+                    <TabbedArea activeKey={key} onSelect={handleSelect}>
+                        <TabPane key={1} tab="Tab 1">TabPane 1 content</TabPane>
+                        <TabPane key={2} tab="Tab 2">TabPane 2 content</TabPane>
+                    </TabbedArea>);
+            React.renderComponent(tabbedAreaInstance, document.body);
+        }
+
+        function handleSelect (selectedKey) {
+            alert('selected ' + selectedKey);
+            key = selectedKey;
+            renderTabbedArea();
+        }
+
+        renderTabbedArea();
+    </script>
+</body>
+</html>

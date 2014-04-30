@@ -20,7 +20,10 @@ pages.user = {
     js: [jsPath + '/user.js', jsPath + '/user.avatar.js'],
     css: ['/css/user.css']
 };
-
+pages.admin = {
+    js: [jsPath + '/admin.js'],
+    css: ['/css/admin.css']
+};
 pages.login = {
     css: ['/css/login.css']
 };

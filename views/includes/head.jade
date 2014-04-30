@@ -1,62 +1,66 @@
 doctype html
 html
-	head
-		meta(http-equiv="Content-type", content="text/html; charset=utf-8")
-		meta(name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no")
-		if title
-			title #{title}
-		else
-			title ACW Automação e Sistemas
-		link(rel="shortcut icon", href="/icons/fav.ico")
-		script(src="/js/ext/lazyload/lazyload.min.js")
-		if dependencies && dependencies.js
-			script LazyLoad.js(#{dependencies.js});
-		if dependencies && dependencies.css
-			each css in dependencies.css
-				link(href=css, rel='stylesheet', type='text/css', media='all')
+    head
+        meta(http-equiv="Content-type", content="text/html; charset=utf-8")
+        meta(name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no")
+        if title
+            title #{title}
+        else
+            title ACW Automação e Sistemas
+        link(rel="shortcut icon", href="/icons/fav.ico")
+        script(src="/js/ext/lazyload/lazyload.min.js")
+        if dependencies && dependencies.js
+            script LazyLoad.js(#{dependencies.js});
+        if dependencies && dependencies.css
+            each css in dependencies.css
+                link(href=css, rel='stylesheet', type='text/css', media='all')
 
-	body
-		nav(id="mainNav", role="navigation", class="navbar navbar-default navbar-static-top navbar-inverse")
-			div.container
-				div.navbar-header
-					button(type="button", class="navbar-toggle", data-toggle="collapse", data-target=".navbar-collapse")
-						span(class="sr-only") Toggle navigation
-						span.icon-bar
-						span.icon-bar
-						span.icon-bar
-					a(class="navbar-brand", href="/") 
-						span.brandLogo
-						span.brandName ACW Automação e Sistemas
-				div(class="navbar-collapse collapse")
-					ul.nav.navbar-nav.navbar-right
-						if user
-							li#userDropDown.dropdown
-								a(id="navUser", href="#", class="dropdown-toggle", data-toggle="dropdown") 
-									if user.avatar
-										span.userAvatar
-											span
-											img(src="/media/u/#{user.id}/thumb/#{user.avatar}")
-									else
-										span.userAvatar
-											span
-											img(src="/img/user.png")
-									b.userName #{user.short_name}
-								ul.dropdown-menu
-									li
-										a(href="/user") Configurações da Conta
-									li(role="presentation", class="divider")
-									li
-										a(href="/logout") Sair
-						else
-							li
-								a(href="/login") Login
-		#mainAlerts
-			each msg in messages.error
-				div.alert.alert-danger.alert-dismissable
-					button(type="button" class="close" data-dismiss="alert" aria-hidden="true") &times;
-					div #{msg}
-			each msg in messages.info
-				div.alert.alert-info.alert-dismissable
-					button(type="button" class="close" data-dismiss="alert" aria-hidden="true") &times;
-					div #{msg}
+    body
+        nav(id="mainNav", role="navigation", class="navbar navbar-default navbar-static-top navbar-inverse")
+            div.container
+                div.navbar-header
+                    button(type="button", class="navbar-toggle", data-toggle="collapse", data-target=".navbar-collapse")
+                        span(class="sr-only") Toggle navigation
+                        span.icon-bar
+                        span.icon-bar
+                        span.icon-bar
+                    a(class="navbar-brand", href="/")
+                        span.brandLogo
+                        span.brandName ACW Automação e Sistemas
+                div(class="navbar-collapse collapse")
+                    ul.nav.navbar-nav.navbar-right
+                        if user
+                            li#userDropDown.dropdown
+                                a(id="navUser", href="#", class="dropdown-toggle", data-toggle="dropdown") 
+                                    if user.avatar
+                                        span.userAvatar
+                                            span
+                                            img(src="/media/u/#{user.id}/thumb/#{user.avatar}")
+                                    else
+                                        span.userAvatar
+                                            span
+                                            img(src="/img/user.png")
+                                    b.userName #{user.short_name}
+                                ul.dropdown-menu
+                                    if pages
+                                        each page in pages
+                                            li
+                                                a(href="/#{page.id}") #{page.title}
+                                    li
+                                        a(href="/user") Configurações da Conta
+                                    li(role="presentation", class="divider")
+                                    li
+                                        a(href="/logout") Sair
+                        else
+                            li
+                                a(href="/login") Login
+        #mainAlerts
+            each msg in messages.error
+                div.alert.alert-danger.alert-dismissable
+                    button(type="button" class="close" data-dismiss="alert" aria-hidden="true") &times;
+                    div #{msg}
+            each msg in messages.info
+                div.alert.alert-info.alert-dismissable
+                    button(type="button" class="close" data-dismiss="alert" aria-hidden="true") &times;
+                    div #{msg}
 

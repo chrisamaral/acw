@@ -57,6 +57,10 @@ module.exports = function (mysql) {
         resources = new Base(mysql);
         resources.helpers = require('./helpers/std.js');
         resources.startConnection();
+        resources.panic = function (msg) {
+            console.error(msg);
+            proccess.exit();
+        }
     }
     return resources;
 };

@@ -1,64 +1,76 @@
 "use strict";
 var pageDeps = require('../config/pages.js') || {},
     etc = require('../app.js')();
-exports.ensureAuthenticated = function (req, res, next) {
 
-    if (req.isAuthenticated()) {
-        res.setHeader('Cache-Control', 'no-cache');
-        return next();
+function setLocals(req, res, page, view, title) {
+    res.locals.title = title;
+    res.locals.url = req.url;
+    res.locals.user = (req.isAuthenticated()) ? req.user : null;
+
+    res.locals.messages = {
+        error: req.flash('error'),
+        info: req.flash('info')
+    };
+
+    var deps = pageDeps.defaults || {js: [], css: []};
+
+    if (page && page !== '/') {
+        deps = pageDeps[page] || deps;
     }
 
-    if (!req.xhr) {
-        return res.redirect('/login');
-    }
+    var n_deps = {
+        js: ((deps.js && deps.js.length)
+            ? "['" + deps.js.concat().join("', '") + "']"
+            : null),
+        css: ((deps.css && deps.css.length)
+            ? deps.css.concat()
+            : null)
+    };
 
-    req.status(403);
-};
+    res.locals.dependencies = n_deps;
+    res.render(view);
+}
+
+function loadPages(req, res, page, view, title){
+    if (!req.isAuthenticated()) {
+        return setLocals(req, res, page, view, title);
+    }
+    etc.db.query("SELECT page.id, page.title" +
+            " FROM acw.role_user" +
+            " JOIN acw.role_page ON role_page.role = role_user.role" +
+            " JOIN acw.page ON page.id = role_page.page" +
+            " WHERE role_user.user = ?" +
+            " GROUP BY page.id",
+        [req.user.id],
+        function (err, rows) {
+            var pages = [];
+            if (!err && rows.length) {
+                pages = rows.concat();
+            }
+            res.locals.pages = pages;
+            setLocals(req, res, page, view, title);
+        });
+}
 
 exports.serveIt = function (view, page, req, res) {
-    if (req.privatePage) {
-        res.setHeader('Cache-Control', 'no-cache');
-    }
+
     page = (page === '/') ? null : page;
 
-    function setLocals(title) {
-        res.locals.title = title;
-        res.locals.url = req.url;
-        res.locals.user = req.user;
-
-        res.locals.messages = {
-            error: req.flash('error'),
-            info: req.flash('info')
-        };
-
-        var deps = pageDeps.defaults || {js: [], css: []};
-
-        if (page && page !== '/') {
-            deps = pageDeps[page] || deps;
-        }
-
-        var n_deps = {
-            js: ((deps.js && deps.js.length)
-                ? "['" + deps.js.concat().join("', '") + "']"
-                : null),
-            css: ((deps.css && deps.css.length)
-                ? deps.css.concat()
-                : null)
-        };
-
-        res.locals.dependencies = n_deps;
-        res.render(view);
-    }
-
     if (!page) {
-        return setLocals(null);
+        return loadPages(req, res, page, view, null);
     }
 
     etc.db.query("SELECT title FROM acw.page WHERE id = ?", [page], function (err, rows) {
         var title = null;
+
         if (!err && rows[0] && rows[0].title) {
             title = rows[0].title;
         }
-        setLocals(title);
+
+        if (!req.isAuthenticated()) {
+            return setLocals(req, res, page, view, title);
+        }
+
+        loadPages(req, res, page, view, title);
     });
 };

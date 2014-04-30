@@ -1,3 +1,9 @@
+::-moz-selection{
+	text-shadow:none;background:rgba(65,131,196,0.4)
+}
+::selection{
+	text-shadow:none;background:rgba(65,131,196,0.4)
+}
 html{
 	
 }
