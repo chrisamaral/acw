@@ -6,7 +6,7 @@ function setLocals(req, res, page, view, title) {
     res.locals.title = title;
     res.locals.url = req.url;
     res.locals.user = (req.isAuthenticated()) ? req.user : null;
-
+    res.locals.jsPath = (etc.ENV === 'development') ? 'src' : 'build';
     res.locals.messages = {
         error: req.flash('error'),
         info: req.flash('info')

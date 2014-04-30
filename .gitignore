@@ -1,3 +1,4 @@
+.module-cache
 npm-debug.log
 config/development
 node_modules/*

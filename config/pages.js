@@ -21,9 +21,15 @@ pages.user = {
     css: ['/css/user.css']
 };
 pages.admin = {
-    js: [jsPath + '/admin.js'],
+    js: [
+        (etc.ENV === 'development')
+            ? '//cdnjs.cloudflare.com/ajax/libs/react/0.10.0/react-with-addons.js'
+            : '//cdnjs.cloudflare.com/ajax/libs/react/0.10.0/react-with-addons.min.js',
+        jsPath + '/admin.main.js'
+    ],
     css: ['/css/admin.css']
 };
+
 pages.login = {
     css: ['/css/login.css']
 };

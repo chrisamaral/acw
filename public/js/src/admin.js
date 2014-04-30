@@ -2,8 +2,9 @@
      //cdnjs.cloudflare.com/ajax/libs/react/0.10.0/react-with-addons.min.js
      //cdnjs.cloudflare.com/ajax/libs/react/0.10.0/JSXTransformer.js
  */
-(function(window, $){
-   'use strict';
+(function ($) {
+
+    'use strict';
     var container = $('.contentWrapper'), user = null;
 
     function makeTabs(tabs) {
@@ -12,10 +13,10 @@
             nav = $('<ul class="nav nav-tabs">').appendTo(tabContainer),
             content = $('<div class="tab-content">').appendTo(tabContainer);
 
-        tabs.forEach(function(tab, index){
+        tabs.forEach(function (tab, index) {
             var n = $('<li>').appendTo(nav),
                 a = $('<a>')
-                        .attr('href', "#"+tab.id)
+                        .attr('href', "#" + tab.id)
                         .text(tab.title)
                         //.click(tabChange)
                         .attr('data-toggle', 'tab').appendTo(n),
@@ -38,4 +39,4 @@
             }
         });
 
-}(window, jQuery));
+}(jQuery));

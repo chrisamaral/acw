@@ -10,7 +10,6 @@
   },
   "homepage": "http://acwautosis.info",
   "dependencies": {
-    "flod" : "*",
     "debug": "*",
     "express": "4.*",
     "express-session": "*",

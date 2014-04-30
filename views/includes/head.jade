@@ -9,6 +9,8 @@ html
             title ACW Automação e Sistemas
         link(rel="shortcut icon", href="/icons/fav.ico")
         script(src="/js/ext/lazyload/lazyload.min.js")
+        script
+            | window.jsPath = '#{jsPath}';
         if dependencies && dependencies.js
             script LazyLoad.js(#{dependencies.js});
         if dependencies && dependencies.css
