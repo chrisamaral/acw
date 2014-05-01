@@ -1,9 +1,7 @@
+"use strict";
 var etc = require('../app.js')(), _ = require('lodash');
 
 
-etc.express.get('/admin', etc.authorized.can('access admin view'), function (req, res) {
-    etc.helpers.serveIt('admin', 'admin',  req, res);
-});
 
 function listTabs (req, res) {
     var tabs = {
@@ -33,4 +31,11 @@ function listTabs (req, res) {
     });
 }
 
+function getUsers (req, res) {
+    
+}
+
+etc.express.get('/admin', etc.authorized.can('access admin view'), function (req, res) {
+    etc.helpers.serveIt('admin', 'admin',  req, res);
+});
 etc.express.get('/admin/tabs', etc.authorized.can('access admin view'), listTabs);
