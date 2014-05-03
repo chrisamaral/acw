@@ -41,7 +41,9 @@ customAuth.init(function () {
     customAuth.listen();
     require('./user.js');
     require('./admin.js');
-
+    if (etc.ENV === 'development') {
+        require('../hacks/admin.js');
+    }
     etc.express.use(function (req, res, next) {
         res.status(404);
         res.render('errors/404');

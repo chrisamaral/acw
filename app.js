@@ -8,6 +8,8 @@ function setVariables() {
     this.ENV = fs.existsSync('./config/development') ? 'development' : 'production';
     this.httpProtocol = 'http';
     this.DOMAIN = this.ENV === 'production' ? 'acwautosis.info' : 'acw.dev';
+    this.dbConfig.multipleStatements = (this.ENV === 'development');
+
     console.log("ENVIROMENT: " + this.ENV);
     console.log("DOMAINNAME: " + this.DOMAIN);
 }
