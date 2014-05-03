@@ -60,6 +60,10 @@
 
     acw.components = components;
     components.AdminTabs = AdminTabs;
-    React.renderComponent(AdminTabs( {source:"/admin/tabs"} ), $('.contentWrapper')[0]);
+
+    function render(){
+        React.renderComponent(AdminTabs( {source:"/admin/tabs"} ), $('.contentWrapper')[0]);
+    }
     
+    LazyLoad.js(['//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js'], render);
 }(window, jQuery));

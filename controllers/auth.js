@@ -135,7 +135,7 @@ function HandleExternalLogin(req, res, next) {
             if (err) {
                 return goDie(req, res);
             }
-            var to = '/';
+            var to = '/home';
             if (req.session.redirect_to) {
                 to = req.session.redirect_to;
                 delete req.session.redirect_to;
@@ -147,6 +147,9 @@ function HandleExternalLogin(req, res, next) {
 
 exports.listen = function () {
     etc.express.get('/login', function (req, res) {
+        if (req.isAuthenticated()) {
+            return res.redirect('/home');
+        }
         etc.helpers.serveIt('login', 'login', req, res);
     });
 

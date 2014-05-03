@@ -74,3 +74,12 @@ exports.serveIt = function (view, page, req, res) {
         loadPages(req, res, page, view, title);
     });
 };
+
+exports.uniqueID = function () {
+    return String.fromCharCode(65 + Math.floor(Math.random() * 26)).toLowerCase() + Date.now().toString(36);
+};
+exports.escapeEmAll = function (a) {
+    return a.map(function (elem) {
+        return etc.db.escape(elem);
+    });
+};

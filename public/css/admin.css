@@ -1,7 +1,30 @@
-
+input[type="search"]{
+    width: 100%;
+    border: 1px solid rgb(220,220,220);
+    line-height: 2em;
+    text-indent: 5px;
+}
 .contentWrapper{
     width: 95%;
     margin: 0 auto;
     min-height: 300px;
     border: none !important;
+}
+.tab-pane{
+    min-height: 300px;
+    border: 1px solid rgb(220, 220, 220);
+    border-top: none;
+    padding: 2em;
+}
+.userTabWrapper{
+
+}
+.userList{
+    overflow-y: auto;
+}
+.userSearchToggle{
+    margin: 5px 0 0 0.5em;
+}
+.userSearchToggle>label>span{
+    padding-left: 5px;
 }

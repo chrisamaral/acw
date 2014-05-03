@@ -30,7 +30,11 @@ customAuth = require('./auth.js');
 customAuth.init(function () {
 
     etc.express.get('/', function (req, res) {
-        etc.helpers.serveIt('home', '/',  req, res);
+        etc.helpers.serveIt('front', '/',  req, res);
+    });
+
+    etc.express.get('/home', function (req, res) {
+        etc.helpers.serveIt('home', 'home',  req, res);
     });
 
     // adicionar rotas de login
@@ -44,24 +48,21 @@ customAuth.init(function () {
     });
 
     etc.express.use(function (err, req, res, next) {
-        console.log(err);
-        if (err && err instanceof etc.authorized.UnauthorizedError === false) {
-            res.status(500);
-            return res.render('errors/500');
-        }
 
-        res.status(401);
+        if (err && err instanceof etc.authorized.UnauthorizedError === false) {
+            return res.status(500).render('errors/500');
+        }
 
         if (!req.isAuthenticated()) {
             req.session.redirect_to = req.originalUrl;
-            return res.redirect('/login');
+            return res.status(401).redirect('/login');
         }
 
         if (req.xhr) {
             return res.send(401);
         }
 
-        res.render('errors/401');
+        res.status(401).render('errors/401');
     });
 
     etc.express.listen(4000);
