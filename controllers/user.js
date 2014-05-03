@@ -62,7 +62,7 @@ etc.express.post('/user/avatar', etc.authorized.can('access private page'), func
                                     return answerIt(500, 'Não foi possível salvar a nova foto, falha ao gerar miniatura');
                                 }
                                 etc.db.query(
-                                    'UPDATE acw.user SET ? WHERE user.id = ? ',
+                                    'UPDATE user SET ? WHERE user.id = ? ',
                                     [{avatar: fname}, req.user.id],
                                     function (err, result) {
                                         if (err) {
@@ -96,7 +96,7 @@ etc.express.post('/user/name', etc.authorized.can('access private page'), functi
         full_name: req.body.full_name
     };
 
-    etc.db.query(' UPDATE acw.user SET ? WHERE user.id = ? ', [user, req.user.id],
+    etc.db.query(' UPDATE user SET ? WHERE user.id = ? ', [user, req.user.id],
         function (err, result) {
             if (err) {
                 res.status(500);
@@ -107,7 +107,7 @@ etc.express.post('/user/name', etc.authorized.can('access private page'), functi
 });
 etc.express.get('/user/tel', etc.authorized.can('access private page'), function (req, res) {
     etc.db.query(' SELECT user_tel.id, user_tel.country, user_tel.area, user_tel.number ' +
-        ' FROM acw.user_tel ' +
+        ' FROM user_tel ' +
         ' WHERE user_tel.user = ? ' +
         ' ORDER BY user_tel.timestamp ', [req.user.id],
         function (err, rows) {
@@ -143,7 +143,7 @@ etc.express.post('/user/tel', etc.authorized.can('access private page'), functio
         return;
     }
 
-    etc.db.query(' INSERT INTO acw.user_tel SET ? ',
+    etc.db.query(' INSERT INTO user_tel SET ? ',
         [{
             country: String(req.body.country).replace(/\D/g, ''),
             area: String(req.body.area).replace(/\D/g, ''),
@@ -161,7 +161,7 @@ etc.express.post('/user/tel', etc.authorized.can('access private page'), functio
 });
 etc.express.delete('/user/tel', etc.authorized.can('access private page'), function (req, res) {
 
-    etc.db.query(' DELETE FROM acw.user_tel WHERE user_tel.user = ? AND user_tel.id = ? ',
+    etc.db.query(' DELETE FROM user_tel WHERE user_tel.user = ? AND user_tel.id = ? ',
         [req.user.id, req.body.tel],
         function (err, result) {
             if (err) {
@@ -175,7 +175,7 @@ etc.express.delete('/user/tel', etc.authorized.can('access private page'), funct
 
 etc.express.get('/user/email', etc.authorized.can('access private page'), function (req, res) {
     etc.db.query(' SELECT user_email.email ' +
-        ' FROM acw.user_email ' +
+        ' FROM user_email ' +
         ' WHERE user_email.user = ? ' +
         ' ORDER BY user_email.timestamp ', [req.user.id],
         function (err, rows) {
@@ -204,7 +204,7 @@ etc.express.post('/user/email', etc.authorized.can('access private page'), funct
         res.status(400);
         return res.send('Email inválido.');
     }
-    etc.db.query(' INSERT INTO acw.user_email SET ? ', [{email: req.body.email, user: req.user.id}],
+    etc.db.query(' INSERT INTO user_email SET ? ', [{email: req.body.email, user: req.user.id}],
         function (err, result) {
             if (err) {
                 res.status(500);
@@ -217,7 +217,7 @@ etc.express.post('/user/email', etc.authorized.can('access private page'), funct
 
 etc.express.delete('/user/email', etc.authorized.can('access private page'), function (req, res) {
     function actuallyDelete() {
-        etc.db.query(' DELETE FROM acw.user_email WHERE user_email.user = ? AND user_email.email = ? ',
+        etc.db.query(' DELETE FROM user_email WHERE user_email.user = ? AND user_email.email = ? ',
             [req.user.id, req.body.email],
             function (err, result) {
                 if (err) {
@@ -229,7 +229,7 @@ etc.express.delete('/user/email', etc.authorized.can('access private page'), fun
             });
     }
 
-    etc.db.query(' SELECT COUNT(*) c FROM acw.user_email WHERE user_email.user = ? ',
+    etc.db.query(' SELECT COUNT(*) c FROM user_email WHERE user_email.user = ? ',
         [req.user.id],
         function (err, result) {
             if (err) {
@@ -273,7 +273,7 @@ etc.express.post('/user/password', etc.authorized.can('access private page'), fu
                     return res.send(500);
                 }
 
-                etc.db.query(' UPDATE acw.user SET ? WHERE user.id = ?',
+                etc.db.query(' UPDATE user SET ? WHERE user.id = ?',
                     [{password: hash}, req.user.id],
                     function (err, result) {
                         if (err) {
@@ -288,7 +288,7 @@ etc.express.post('/user/password', etc.authorized.can('access private page'), fu
         });
     }
 
-    etc.db.query(' SELECT user.password FROM acw.user WHERE user.id = ? ',
+    etc.db.query(' SELECT user.password FROM user WHERE user.id = ? ',
         [req.user.id],
         function (err, result) {
             if (err) {

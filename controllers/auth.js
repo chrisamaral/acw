@@ -10,9 +10,9 @@ function setupAuth(){
     etc.passport = require('passport');
     etc.passport.use(new LocalStrategy({usernameField: 'email'}, function (email, password, done) {
         etc.db.query('SELECT user.id, user.short_name, user.full_name, user.avatar, user.password ' +
-                ' FROM  acw.user_email ' +
-                ' JOIN acw.active_user ON active_user.user = user_email.user ' +
-                ' JOIN acw.user ON user.id = active_user.user ' +
+                ' FROM  user_email ' +
+                ' JOIN active_user ON active_user.user = user_email.user ' +
+                ' JOIN user ON user.id = active_user.user ' +
                 ' WHERE user_email.email = ? AND user.password IS NOT NULL ',
             [email],
             function (err, rows) {
@@ -50,9 +50,9 @@ function setupAuth(){
         });
 
         etc.db.query(' SELECT user.id, user.short_name, user.full_name, user.avatar ' +
-                ' FROM  acw.user_email ' +
-                ' JOIN acw.active_user ON active_user.user = user_email.user ' +
-                ' JOIN acw.user ON user.id = active_user.user ' +
+                ' FROM  user_email ' +
+                ' JOIN active_user ON active_user.user = user_email.user ' +
+                ' JOIN user ON user.id = active_user.user ' +
                 ' WHERE user_email.email IN ( ? ) ' +
                 ' GROUP BY user.id LIMIT 1 ',
             [emails],
@@ -83,7 +83,7 @@ function setupAuth(){
     });
     etc.passport.deserializeUser(function (id, done) {
         etc.db.query(' SELECT user.id, user.short_name, user.full_name, user.avatar ' +
-                ' FROM  acw.user ' +
+                ' FROM  user ' +
                 ' WHERE user.id = ' + etc.db.escape(id),
             function (err, rows) {
                 if (err) {

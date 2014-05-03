@@ -28,31 +28,113 @@ exports.getTabs = function (req, res) {
         res.json({tabs: avaibleTabs, user: user});
     });
 };
+function myUserCreation(callback) {
+    var db = this.db, user = this.user;
+    db.select('user.creation').where('user.id', user).get('user', function (err, rows) {
 
+        if (err) {
+            return callback(err);
+        }
+
+        if (!rows.length) {
+            return callback('Usuário inválido: ' + user);
+        }
+
+        return callback(null, rows[0].creation);
+    });
+}
+function filterThem(db, filterText) {
+    if (!filterText) {
+        return;
+    }
+
+    var escaped = db.escape((filterText.length > 3 ? '%' : '') + filterText + '%'),
+        where = '  (' +
+            '   user.full_name LIKE ' + escaped +
+            '   OR user.short_name LIKE ' + escaped +
+            '   OR ( ' +
+            '       SELECT COUNT(*) ' +
+            '       FROM user_email' +
+            '       WHERE' +
+            '           user_email.user = user.id' +
+            '          AND user_email.email LIKE ' + escaped +
+            '       ) > 0' +
+            '   )';
+    db.where(where);
+}
+
+function countUsers(userCreation, callback) {
+    var db = this.db, filterText = this.filterText,
+        activeUsersOnly = this.activeUsersOnly;
+
+    db.where('creation > ' + db.escape(userCreation.toYMD()));
+    if (filterText && !activeUsersOnly) {
+        db.join('active_user', 'user.id = active_user.user', 'left');
+    } else {
+        db.join('active_user', 'user.id = active_user.user');
+    }
+    filterThem(db, filterText);
+
+    db.count('user', function (err, count) {
+        if (err) {
+            callback(err);
+        }
+        callback(null, userCreation, count);
+    });
+}
+function getUsers(userCreation, usersCount, callback) {
+    var db = this.db, filterText = this.filterText,
+        activeUsersOnly = this.activeUsersOnly,
+        offset = this.offset;
+
+    offset = Math.max(0, Math.min(usersCount - 30, offset));
+    db.where('creation > ' + db.escape(userCreation));
+
+    if (filterText && !activeUsersOnly) {
+        db.join('active_user', 'user.id = active_user.user', 'left');
+    } else {
+        db.join('active_user', 'user.id = active_user.user');
+    }
+
+    db.select(['user.id', 'user.full_name', 'user.short_name', 'IF(active_user.user IS NULL, 0, 1) active']);
+    filterThem(db, filterText);
+
+    db.order_by('user.full_name');
+    db.limit(30, offset).get('user', function (err, rows) {
+        if (err) {
+            callback(err);
+        }
+        callback(null, {users: rows, offset: offset});
+    });
+}
 exports.getUsers = function (req, res) {
-    etc.db.query('SELECT user.creation' +
-        ' FROM acw.user' +
-        ' WHERE user.id = ?',
-        [req.user.id],
-        function (err, rows) {
-            if (err || !rows.length) {
-                return res.status(500).send('Usuário inválido');
-            }
+    var filterText = req.query.filterText,
+        activeUsersOnly = req.query.activeUsersOnly === 'true' ? true : false,
+        offset = parseInt(req.query.offset, 10),
+        async = require('async');
+    filterText = (_.isString(filterText) && filterText.length) ? filterText : null;
 
-            etc.db.query('SELECT ' +
-                '   user.id, user.full_name, user.short_name' +
-                ' FROM acw.active_user' +
-                ' JOIN acw.user ON user.id = active_user.user' +
-                ' WHERE user.creation > ? ' +
-                ' ORDER BY user.full_name' +
-                ' LIMIT ?, 20',
-                [rows[0].creation, parseInt(req.query.offset, 10)],
-                function (err, rows) {
-                    if (err) {
-                        return res.status(500).send('Não foi possível consultar a lista de usuários');
-                    }
-                    res.json(rows);
-                });
-        });
+    etc.pool.getNewAdapter(function (db) {
+        async.waterfall(
+            [
+                myUserCreation.bind({db: db, user: req.user.id}),
+                countUsers.bind({db: db, filterText: filterText, activeUsersOnly: activeUsersOnly}),
+                getUsers.bind({
+                    db: db,
+                    filterText: filterText,
+                    activeUsersOnly: activeUsersOnly,
+                    offset: offset
+                })
+            ],
+            function (err, result) {
+                db.releaseConnection();
+                if (err) {
+                    console.log(err);
+                    return res.send(500);
+                }
+                res.json(result);
+            }
+        );
+    });
 };
 /*jslint nomen: false*/

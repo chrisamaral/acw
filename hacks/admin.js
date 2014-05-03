@@ -23,10 +23,10 @@ etc.express.get('/admin/random', etc.authorized.can(PERMS), function (req, res) 
         args.push([id, names[r1], names[r1] + ' ' + surnames[r2], new Date()]);
         args.push([id, names[r1].toLowerCase() + '.' + id + '@gmail.com']);
 
-        inserts.push('INSERT INTO acw.user (id, short_name, full_name, creation) VALUES (?);');
-        inserts.push('INSERT INTO acw.user_email (user, email) VALUES (?);');
+        inserts.push('INSERT INTO user (id, short_name, full_name, creation) VALUES (?);');
+        inserts.push('INSERT INTO user_email (user, email) VALUES (?);');
         if (Math.floor(Math.random() * 100) % 2 === 0) {
-            inserts.push('INSERT INTO acw.active_user (user, init) VALUES (?);');
+            inserts.push('INSERT INTO active_user (user, init) VALUES (?);');
             args.push([id, new Date()]);
         }
 

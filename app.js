@@ -20,7 +20,6 @@ function Base(mysql) {
 }
 
 Base.prototype.handleDbError = function (err) {
-    this.db.connAlive = false;
     setTimeout(this.startConnection.bind(this), this.waitTime * 1000);
     console.log('error when connecting to db:', err.code, 'will try again in', this.waitTime, 'seconds');
 };
@@ -28,11 +27,9 @@ Base.prototype.handleDbError = function (err) {
 Base.prototype.startConnection = function () {
     console.log('connecting to db...');
     this.db = this.mysql.createConnection(this.dbConfig);
-    this.db.connAlive = false;
 
     this.db.connect(function (err) {
         if (!err) {
-            this.db.connAlive = true;
             console.log('... connected!');
         } else {
             this.handleDbError(err);
@@ -55,9 +52,15 @@ Base.prototype.startConnection = function () {
 };
 
 module.exports = function (mysql) {
+    var Db;
     if (mysql) {
         resources = new Base(mysql);
         resources.helpers = require('./helpers/std.js');
+
+        Db = require('mysql-activerecord');
+        resources.pool = new Db.Pool(require('./config/active.db.js'));
+
+        resources.strftime = require('strftime');
         resources.startConnection();
         resources.panic = function (msg) {
             console.error(msg);
@@ -66,3 +69,4 @@ module.exports = function (mysql) {
     }
     return resources;
 };
+

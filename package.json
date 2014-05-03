@@ -30,6 +30,7 @@
     "gm": "*",
     "mkdirp": "*",
     "formidable": "*",
-    "mysql": "*"
+    "mysql-activerecord": "*",
+    "strftime": "*"
   }
 }

@@ -2,6 +2,10 @@
 var pageDeps = require('../config/pages.js') || {},
     etc = require('../app.js')();
 
+Date.prototype.toYMD = function () {
+    return etc.strftime('%Y-%m-%d %H:%M:S', this);
+};
+
 function setLocals(req, res, page, view, title) {
     res.locals.title = title;
     res.locals.url = req.url;
@@ -36,9 +40,9 @@ function loadPages(req, res, page, view, title){
         return setLocals(req, res, page, view, title);
     }
     etc.db.query("SELECT page.id, page.title" +
-            " FROM acw.role_user" +
-            " JOIN acw.role_page ON role_page.role = role_user.role" +
-            " JOIN acw.page ON page.id = role_page.page" +
+            " FROM role_user" +
+            " JOIN role_page ON role_page.role = role_user.role" +
+            " JOIN page ON page.id = role_page.page" +
             " WHERE role_user.user = ?" +
             " GROUP BY page.id",
         [req.user.id],
@@ -60,7 +64,7 @@ exports.serveIt = function (view, page, req, res) {
         return loadPages(req, res, page, view, null);
     }
 
-    etc.db.query("SELECT title FROM acw.page WHERE id = ?", [page], function (err, rows) {
+    etc.db.query("SELECT title FROM page WHERE id = ?", [page], function (err, rows) {
         var title = null;
 
         if (!err && rows[0] && rows[0].title) {
