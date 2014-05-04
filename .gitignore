@@ -1,6 +1,7 @@
 .module-cache
+.directory
 npm-debug.log
-config/development
+server/config/development
 node_modules/*
 public/media/*
 .idea/*

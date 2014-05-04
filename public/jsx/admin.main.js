@@ -65,6 +65,8 @@
         React.renderComponent(<AdminTabs source="/admin/tabs" />, $('.contentWrapper')[0]);
     }
     
-    LazyLoad.js(['//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js', '//cdnjs.cloudflare.com/ajax/libs/pace/0.4.17/pace.js'], render);
+    LazyLoad.js([
+        '//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.min.js',
+        '//cdnjs.cloudflare.com/ajax/libs/pace/0.4.17/pace.min.js'], render);
     LazyLoad.css(['/css/pace.css']);
 }(window, jQuery));
