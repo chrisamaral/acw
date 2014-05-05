@@ -7,22 +7,10 @@
         React = window.React,
         UserList,
         UserItem,
-        SelectedUser,
         UserSearch;
-
-    SelectedUser = React.createClass({
-        render: function () {
-            return (<div className='selectedUser'>
-                <form action='/admin/user' method='POST'>
-                    the form goes here
-                </form>
-            </div>);
-        }
-    });
 
     UserSearch = React.createClass({
         handleChange: function () {
-            
             var checker = this.refs.activeUsersOnlyInput.getDOMNode(),
                 text = this.refs.filterTextInput.getDOMNode().value,
                 checked = checker.checked;
@@ -30,33 +18,49 @@
             this.props.onUserInput(text, checked);
         },
         render: function () {
-            return (<form onSubmit={this.handleSubmit}>
-                <input type='search' 
-                    placeholder='Busque pelo Nome/Email'
-                    ref='filterTextInput'
-                    onChange={this.handleChange}
-                    value={this.props.filterText} />
-                <p className='userSearchToggle'>
-                    <label htmlFor='UserSearchFilterToggle'>
-                        <input id='UserSearchFilterToggle' type='checkbox' 
-                            ref='activeUsersOnlyInput'
-                            disabled={!this.props.filterText.length}
+            return (<form role='form'>
+                    <div className='form-group'>
+                        <label className='sr-only' htmlFor='UserSearchInput'>Termo de busca</label>
+                        <input id='UserSearchInput' type='search' 
+                            placeholder='Busque pelo Nome/Email'
+                            ref='filterTextInput'
                             onChange={this.handleChange}
-                            checked={(this.props.filterText.length > 0) ? this.props.activeUsersOnly : true}
-                            value={this.props.activeUsersOnly} />
-                        <span>Apenas usuários ativos</span>
-                    </label>
-                </p>
+                            className='form-control'
+                            value={this.props.filterText} />
+                    </div>
+                    <div className='checkbox'>
+                        <label>
+                            <input type='checkbox' 
+                                ref='activeUsersOnlyInput'
+                                disabled={!this.props.filterText.length}
+                                onChange={this.handleChange}
+                                checked={(this.props.filterText.length > 0) ? this.props.activeUsersOnly : true}
+                                value={this.props.activeUsersOnly} />
+                            Apenas usuários ativos
+                        </label>
+                    </div>
             </form>);
         }
     });
 
     UserItem = React.createClass({
+        userClick: function(e){
+            e.preventDefault();
+            this.props.onUserClick(this.props.user.id);
+        },
         render: function () {
             var user = this.props.user,
                 label = user.full_name || user.short_name || 'sem nome ...';
+            
             label = (user.active === 0) ? (<del title='Usuário desativado'>{label}</del>) : label;
-            return (<a href='#' className='list-group-item'>{label}</a>);
+            label = this.props.isSelected 
+                ? (<strong>
+                        <span className='theOne'>{'❯'}</span>
+                        {label}
+                    </strong>)
+                : label;
+
+            return (<a href='#' onClick={this.userClick} className='list-group-item userListItem'>{label}</a>);
         }
     });
     
@@ -84,16 +88,17 @@
                         }
                     }
 
-                }.bind(this), 500);
+                }.bind(this), 1000);
             },
             render: function () {
-                var users = [];
-                this.props.users.forEach(function(user, index){
-                    users.push(<UserItem key={user.id} user={user} />);
-                });
                 return (
                     <div className='userList list-group' ref='userList' onScroll={this.scrollChange}>
-                        {users}
+                        {this.props.users.map(function(user, index){
+                            return (<UserItem 
+                                key={user.id} user={user} 
+                                onUserClick={this.props.onUserClick}
+                                isSelected={this.props.selectedUser === user.id} />);
+                        }.bind(this))}
                     </div>
                 )
             }
@@ -101,17 +106,31 @@
     }());
 
     (function(){
-        var userInputTimeout, scrollTimeout;
+        var userInputTimeout, scrollTimeout, SelectedUser;
         components.UserManager =  React.createClass({
             getInitialState: function () {
-                return {users: [], selectedUser: null, reachedBottom: false, reachedTop: true,
+                return {
+                    users: [],
+                    formLoaded: false,
+                    selectedUser: null,
+                    reachedBottom: false,
+                    reachedTop: true,
                     query: {
-                        filterText: '', activeUsersOnly: true, offset: 0
+                        filterText: '',
+                        activeUsersOnly: true,
+                        offset: 0
                     }
                 };
             },
+            selectUser: function(userID){
+                this.setState({selectedUser: userID});
+            },
             componentDidMount: function () {
-                this.reloadList();
+                LazyLoad.js(['/js/' + window.jsPath + '/admin.usermanager.form.js'], function(){
+                    this.setState({formLoaded: true});
+                    this.reloadList();
+                }.bind(this));
+                
             },
             offsetChange: function(dir){
                 var oldOffset = this.state.query.offset, 
@@ -157,6 +176,13 @@
                     }.bind(this));
             },
             render: function () {
+                var form = '...';
+                if (this.state.formLoaded) {
+                    SelectedUser = components.SelectedUser;
+                    form = (<SelectedUser 
+                        action='/admin/user'
+                        user={this.state.selectedUser}/>);
+                }
                 return (<div className='row userTabWrapper'>
                     <div className='col-md-4'>
                         <UserSearch 
@@ -165,12 +191,14 @@
                             onUserInput={this.searchInputChange} />
                         <UserList 
                             users={this.state.users} 
+                            selectedUser={this.state.selectedUser}
+                            onUserClick={this.selectUser}
                             onOffsetChange={this.offsetChange} 
                             reachedTop={this.state.reachedTop}
                             reachedBottom={this.state.reachedBottom} />
                     </div>
                     <div className='col-md-8'>
-                        <SelectedUser user={this.state.selectedUser}/>
+                        {form}
                     </div>
                 </div>);
             } 

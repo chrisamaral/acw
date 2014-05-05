@@ -1,5 +1,5 @@
-"use strict";
 /*jslint nomen: true*/
+"use strict";
 var etc = require('../base.js')(), _ = require('lodash');
 exports.getTabs = function (req, res) {
     var tabs = {
@@ -66,8 +66,9 @@ function filterThem(db, filterText) {
 function countUsers(userCreation, callback) {
     var db = this.db, filterText = this.filterText,
         activeUsersOnly = this.activeUsersOnly;
-
-    db.where('creation > ' + db.escape(userCreation.toYMD()));
+    if (etc.ENV !== 'development') {
+        db.where('creation > ' + db.escape(userCreation.toYMD()));
+    }
     if (filterText && !activeUsersOnly) {
         db.join('active_user', 'user.id = active_user.user', 'left');
     } else {
@@ -88,8 +89,9 @@ function getUsers(userCreation, usersCount, callback) {
         offset = this.offset;
 
     offset = Math.max(0, Math.min(usersCount - 30, offset));
-    db.where('creation > ' + db.escape(userCreation));
-
+    if (etc.ENV !== 'development') {
+        db.where('creation > ' + db.escape(userCreation));
+    }
     if (filterText && !activeUsersOnly) {
         db.join('active_user', 'user.id = active_user.user', 'left');
     } else {
@@ -137,4 +139,34 @@ exports.getUsers = function (req, res) {
         );
     });
 };
+
+exports.getUser = function (req, res) {
+    var id = req.params.id,
+        q = etc.db.query('SELECT ' +
+            '   user.id, user.full_name, user.short_name, user.avatar,' +
+            '   group_concat(DISTINCT user_email.email SEPARATOR ",") emails,' +
+            '   group_concat(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) SEPARATOR ",") tels' +
+            ' FROM user' +
+            ' LEFT JOIN user_email ON user_email.user = user.id' +
+            ' LEFT JOIN user_tel ON user_tel.user = user.id' +
+            ' WHERE user.id = ? ' +
+            ' GROUP BY user.id',
+            [id],
+            function (err, rows) {
+
+                if (err) {
+                    return res.status(500);
+                }
+                var user = rows[0];
+
+                if (user.avatar) {
+                    user.avatar = '/media/u/' + id + '/1/' + user.avatar;
+                }
+
+                user.emails = user.emails ? user.emails.split(',') : [];
+                user.tels = user.tels ? user.tels.split(',') : [];
+                res.json(user);
+            });
+};
+
 /*jslint nomen: false*/

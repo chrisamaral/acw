@@ -4,6 +4,7 @@
 ::selection{
 	text-shadow:none;background:rgba(65,131,196,0.4)
 }
+/*
 input[type="search"]{
 	-webkit-box-sizing: content-box !important;
 	-moz-box-sizing: content-box !important;
@@ -12,8 +13,8 @@ input[type="search"]{
 }
 
 input[type="search"]::-webkit-search-cancel-button {
--webkit-appearance: searchfield-cancel-button !important;
-}
+	-webkit-appearance: searchfield-cancel-button !important;
+}*/
 
 html{
 	

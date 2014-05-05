@@ -1,9 +1,11 @@
+/*
 input[type="search"]{
     width: 100%;
     border: 1px solid rgb(220,220,220);
     line-height: 2em;
     text-indent: 5px;
 }
+*/
 .contentWrapper{
     width: 95%;
     margin: 0 auto;
@@ -24,21 +26,27 @@ input[type="search"]{
     overflow-y: auto;
     border: 1px solid rgb(220, 220, 220);
 }
-.userList>a{
+.userListItem{
     border: none;
     border-top: 1px solid rgb(220, 220, 220);
 }
-.userList>a:first-child{
+.userListItem:first-child{
     border-top: none;
     padding-top: 1em;
 }
-.userList>a:last-child{
+.userListItem:last-child{
     padding-bottom: 1em;
 }
-
-.userSearchToggle{
-    margin: 5px 0 0 0.5em;
+.userListItem .theOne{
+    margin-right: 5px;
 }
-.userSearchToggle>label>span{
-    padding-left: 5px;
+.userAvatarThumb{
+    height: 100%;
+    width: 100%;
+    border-radius: 100%;
+}
+.userAvatarThumbContainer>span{
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
 }

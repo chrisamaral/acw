@@ -7,22 +7,10 @@
         React = window.React,
         UserList,
         UserItem,
-        SelectedUser,
         UserSearch;
-
-    SelectedUser = React.createClass({displayName: 'SelectedUser',
-        render: function () {
-            return (React.DOM.div( {className:"selectedUser"}, 
-                React.DOM.form( {action:"/admin/user", method:"POST"}, 
-                    "the form goes here"
-                )
-            ));
-        }
-    });
 
     UserSearch = React.createClass({displayName: 'UserSearch',
         handleChange: function () {
-            
             var checker = this.refs.activeUsersOnlyInput.getDOMNode(),
                 text = this.refs.filterTextInput.getDOMNode().value,
                 checked = checker.checked;
@@ -30,33 +18,49 @@
             this.props.onUserInput(text, checked);
         },
         render: function () {
-            return (React.DOM.form( {onSubmit:this.handleSubmit}, 
-                React.DOM.input( {type:"search", 
-                    placeholder:"Busque pelo Nome/Email",
-                    ref:"filterTextInput",
-                    onChange:this.handleChange,
-                    value:this.props.filterText} ),
-                React.DOM.p( {className:"userSearchToggle"}, 
-                    React.DOM.label( {htmlFor:"UserSearchFilterToggle"}, 
-                        React.DOM.input( {id:"UserSearchFilterToggle", type:"checkbox", 
-                            ref:"activeUsersOnlyInput",
-                            disabled:!this.props.filterText.length,
+            return (React.DOM.form( {role:"form"}, 
+                    React.DOM.div( {className:"form-group"}, 
+                        React.DOM.label( {className:"sr-only", htmlFor:"UserSearchInput"}, "Termo de busca"),
+                        React.DOM.input( {id:"UserSearchInput", type:"search", 
+                            placeholder:"Busque pelo Nome/Email",
+                            ref:"filterTextInput",
                             onChange:this.handleChange,
-                            checked:(this.props.filterText.length > 0) ? this.props.activeUsersOnly : true,
-                            value:this.props.activeUsersOnly} ),
-                        React.DOM.span(null, "Apenas usuários ativos")
+                            className:"form-control",
+                            value:this.props.filterText} )
+                    ),
+                    React.DOM.div( {className:"checkbox"}, 
+                        React.DOM.label(null, 
+                            React.DOM.input( {type:"checkbox", 
+                                ref:"activeUsersOnlyInput",
+                                disabled:!this.props.filterText.length,
+                                onChange:this.handleChange,
+                                checked:(this.props.filterText.length > 0) ? this.props.activeUsersOnly : true,
+                                value:this.props.activeUsersOnly} ),
+                            "Apenas usuários ativos"
+                        )
                     )
-                )
             ));
         }
     });
 
     UserItem = React.createClass({displayName: 'UserItem',
+        userClick: function(e){
+            e.preventDefault();
+            this.props.onUserClick(this.props.user.id);
+        },
         render: function () {
             var user = this.props.user,
                 label = user.full_name || user.short_name || 'sem nome ...';
+            
             label = (user.active === 0) ? (React.DOM.del( {title:"Usuário desativado"}, label)) : label;
-            return (React.DOM.a( {href:"#", className:"list-group-item"}, label));
+            label = this.props.isSelected 
+                ? (React.DOM.strong(null, 
+                        React.DOM.span( {className:"theOne"}, '❯'),
+                        label
+                    ))
+                : label;
+
+            return (React.DOM.a( {href:"#", onClick:this.userClick, className:"list-group-item userListItem"}, label));
         }
     });
     
@@ -84,16 +88,17 @@
                         }
                     }
 
-                }.bind(this), 500);
+                }.bind(this), 1000);
             },
             render: function () {
-                var users = [];
-                this.props.users.forEach(function(user, index){
-                    users.push(UserItem( {key:user.id, user:user} ));
-                });
                 return (
                     React.DOM.div( {className:"userList list-group", ref:"userList", onScroll:this.scrollChange}, 
-                        users
+                        this.props.users.map(function(user, index){
+                            return (UserItem( 
+                                {key:user.id, user:user, 
+                                onUserClick:this.props.onUserClick,
+                                isSelected:this.props.selectedUser === user.id} ));
+                        }.bind(this))
                     )
                 )
             }
@@ -101,17 +106,31 @@
     }());
 
     (function(){
-        var userInputTimeout, scrollTimeout;
+        var userInputTimeout, scrollTimeout, SelectedUser;
         components.UserManager =  React.createClass({displayName: 'UserManager',
             getInitialState: function () {
-                return {users: [], selectedUser: null, reachedBottom: false, reachedTop: true,
+                return {
+                    users: [],
+                    formLoaded: false,
+                    selectedUser: null,
+                    reachedBottom: false,
+                    reachedTop: true,
                     query: {
-                        filterText: '', activeUsersOnly: true, offset: 0
+                        filterText: '',
+                        activeUsersOnly: true,
+                        offset: 0
                     }
                 };
             },
+            selectUser: function(userID){
+                this.setState({selectedUser: userID});
+            },
             componentDidMount: function () {
-                this.reloadList();
+                LazyLoad.js(['/js/' + window.jsPath + '/admin.usermanager.form.js'], function(){
+                    this.setState({formLoaded: true});
+                    this.reloadList();
+                }.bind(this));
+                
             },
             offsetChange: function(dir){
                 var oldOffset = this.state.query.offset, 
@@ -157,6 +176,13 @@
                     }.bind(this));
             },
             render: function () {
+                var form = '...';
+                if (this.state.formLoaded) {
+                    SelectedUser = components.SelectedUser;
+                    form = (SelectedUser( 
+                        {action:"/admin/user",
+                        user:this.state.selectedUser}));
+                }
                 return (React.DOM.div( {className:"row userTabWrapper"}, 
                     React.DOM.div( {className:"col-md-4"}, 
                         UserSearch( 
@@ -165,12 +191,14 @@
                             onUserInput:this.searchInputChange} ),
                         UserList( 
                             {users:this.state.users, 
+                            selectedUser:this.state.selectedUser,
+                            onUserClick:this.selectUser,
                             onOffsetChange:this.offsetChange, 
                             reachedTop:this.state.reachedTop,
                             reachedBottom:this.state.reachedBottom} )
                     ),
                     React.DOM.div( {className:"col-md-8"}, 
-                        SelectedUser( {user:this.state.selectedUser})
+                        form
                     )
                 ));
             } 
