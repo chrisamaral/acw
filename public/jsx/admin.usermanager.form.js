@@ -6,6 +6,9 @@
         components = acw.components,
         React = window.React,
         SelectedUser,
+        ExistingUserForm,
+        ContactList,
+        ContactItem,
         UserAvatar;
 
     UserAvatar = React.createClass({
@@ -13,11 +16,68 @@
             return (<img className='userAvatarThumb' src={this.props.src ? this.props.src : '/img/user-large.png'} />);
         }
     });
+    ContactItem = React.createClass({
+        onCloseClick: function() {
+            this.props.removeUserContact(this.props.item);
+        },
+        render: function(){
+            return (<li className='list-group-item'>
+                    <span>{this.props.item}</span>
+                    { this.props.removeUserContact
+                        ? <a aria-hidden="true" className="close" title="Remover" onClick={this.onCloseClick}>×</a>
+                        : ''
+                    }
+            </li>)
+        }
+    });
+    ContactList = React.createClass({
+        render: function () {
+            return (<ul className='list-group ContactList'>
+                {
+                    this.props.list.map(function(item){
+                        return (
+                            this.props.removeUserContact
+                                ? <ContactItem 
+                                    item={item} 
+                                    key={item} 
+                                    removeUserContact={this.props.removeUserContact} />
+                                : <ContactItem 
+                                    item={item} 
+                                    key={item} />
+                        );
+                    }.bind(this))
+                }        
+            </ul>);
+        }
+    });
+    ExistingUserForm = React.createClass({
+        render: function () {
+            return (<div>
+                    <div className='userGrantLine'>usuário válido desde XXX até YYY</div>
+                    <div className='row'>
+                        <div className='col-md-5'>
+                            <ContactList list={this.props.emails} removeUserContact={this.props.removeUserContact} />
+                            <ContactList list={this.props.tels} />
+                        </div>
+                        <div className='col-md-7'>
+                            lista de empresas
+                        </div>
+                    </div>
+                </div>);
+        }
+        
+    });
     SelectedUser = React.createClass({
         mixins: [React.addons.LinkedStateMixin],
+        removeUserContact: function(email) {
+            var emails = this.state.emails, index = emails.indexOf(email);
+            if (index >= 0) {
+                emails.splice(index, 1);
+                this.setState({emails: emails});
+            }
+        },
         getInitialState: function () {
             return {
-                id: null,
                 full_name: '',
                 short_name: '',
                 emails: [],
@@ -25,35 +85,24 @@
                 avatar: null
             };
         },
-        componentDidMount: function(){
-            console.log('mounted again');
+        componentWillReceiveProps: function(new_props){
+            this.loadUser(new_props);
         },
-        loadUser: function () {
-
-            if (this.props.user === this.state.id) {
-                return;
+        loadUser: function (new_props) {
+            if (!new_props.user) {
+                return this.setState(this.getInitialState());
             }
-
-            if (!this.props.user) {
-                return setTimeout(function(){
-                    this.setState(this.getInitialState());
-                }.bind(this), 100);
-            }
-
             
-            $.get(this.props.action + '/' + this.props.user)
+            $.get('/admin/user/' + new_props.user)
                 .done(function (user) {
                     this.setState(user);
                 }.bind(this));
         },
         render: function () {
-            this.loadUser();
             return (<div className='selectedUser jumbotron'>
-                <form action={this.props.user 
-                            ? this.props.action + '/' + this.props.user 
-                            : this.props.action} 
-                        data-user-id={this.props.user}
-                        method='POST'>
+                <form action={'/admin/user' + 
+                        ( this.props.user 
+                            ? '/' + this.props.user : '' ) + '/name'} method='POST'>
                     <div className='row'>
                         <div className='col-md-2 userAvatarThumbContainer'>
                             <span></span>
@@ -83,6 +132,13 @@
                         </div>
                     </div>
                 </form>
+                {this.props.user
+                    ? (<ExistingUserForm 
+                        emails={this.state.emails}
+                        tels={this.state.tels}
+                        removeUserContact={this.removeUserContact} />)
+                    : ''
+                }
             </div>);
         }
     });

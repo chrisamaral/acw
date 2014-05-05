@@ -176,12 +176,11 @@
                     }.bind(this));
             },
             render: function () {
+                console.log('rendering UserManager...');
                 var form = '...';
                 if (this.state.formLoaded) {
                     SelectedUser = components.SelectedUser;
-                    form = (SelectedUser( 
-                        {action:"/admin/user",
-                        user:this.state.selectedUser}));
+                    form = (SelectedUser( {user:this.state.selectedUser}));
                 }
                 return (React.DOM.div( {className:"row userTabWrapper"}, 
                     React.DOM.div( {className:"col-md-4"}, 

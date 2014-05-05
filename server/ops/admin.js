@@ -143,9 +143,9 @@ exports.getUsers = function (req, res) {
 exports.getUser = function (req, res) {
     var id = req.params.id,
         q = etc.db.query('SELECT ' +
-            '   user.id, user.full_name, user.short_name, user.avatar,' +
-            '   group_concat(DISTINCT user_email.email SEPARATOR ",") emails,' +
-            '   group_concat(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) SEPARATOR ",") tels' +
+            '   user.full_name, user.short_name, user.avatar,' +
+            '   group_concat(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails,' +
+            '   group_concat(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels' +
             ' FROM user' +
             ' LEFT JOIN user_email ON user_email.user = user.id' +
             ' LEFT JOIN user_tel ON user_tel.user = user.id' +
