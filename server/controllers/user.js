@@ -47,7 +47,7 @@ etc.express.post('/user/avatar', etc.authorized.can('access private page'), func
                 x: parseInt(formFields.cropX, 10) / shrink,
                 y: parseInt(formFields.cropY, 10) / shrink
             };
-        console.log(usrPath);
+
         mkdirp(usrPath + '/1', function (err) {
             gm(formFiles.pic.path)
                 .crop(dim.width, dim.height, dim.x, dim.y)

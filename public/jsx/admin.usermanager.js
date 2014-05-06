@@ -126,7 +126,9 @@
                 this.setState({selectedUser: userID});
             },
             componentDidMount: function () {
-                LazyLoad.js(['/js/' + window.jsPath + '/admin.usermanager.form.js'], function(){
+                var js = ['/js/' + window.jsPath + '/admin.usermanager.form.js'];
+                
+                LazyLoad.js(, function(){
                     this.setState({formLoaded: true});
                     this.reloadList();
                 }.bind(this));
@@ -176,7 +178,6 @@
                     }.bind(this));
             },
             render: function () {
-                console.log('rendering UserManager...');
                 var form = '...';
                 if (this.state.formLoaded) {
                     SelectedUser = components.SelectedUser;

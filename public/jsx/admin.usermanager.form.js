@@ -53,9 +53,13 @@
     ExistingUserForm = React.createClass({
         render: function () {
             return (<div>
-                    <div className='userGrantLine'>usuário válido desde XXX até YYY</div>
                     <div className='row'>
                         <div className='col-md-5'>
+                            <div className='form-group'>
+                                <label>
+
+                                </label>
+                            </div>
                             <ContactList list={this.props.emails} removeUserContact={this.props.removeUserContact} />
                             <ContactList list={this.props.tels} />
                         </div>
@@ -82,7 +86,9 @@
                 short_name: '',
                 emails: [],
                 tels: [],
-                avatar: null
+                avatar: null,
+                init: new Date(),
+                end: null
             };
         },
         componentWillReceiveProps: function(new_props){
@@ -131,6 +137,23 @@
                             </div>
                         </div>
                     </div>
+                    /*{
+                        UTILIZAR bootstrap-datepicker
+                        CHECAR, se usuário existente
+                            Se usuário existente 
+                                se ativo:
+                                    mostrar apenas campo data de expiração/botão "desativar"
+                                se desativado:
+                                    mostrar botão "ativar"/data de ativação
+                                        & 
+                                    campo data de expiração/botão "desativar"
+                            Se novo usuário
+                                mostrar botão "ativar"/data de ativação
+                                    & 
+                                campo data de expiração/botão "desativar"
+
+                    }*/
+                    
                 </form>
                 {this.props.user
                     ? (<ExistingUserForm 

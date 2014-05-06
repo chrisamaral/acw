@@ -141,32 +141,37 @@ exports.getUsers = function (req, res) {
 };
 
 exports.getUser = function (req, res) {
-    var id = req.params.id,
-        q = etc.db.query('SELECT ' +
-            '   user.full_name, user.short_name, user.avatar,' +
-            '   group_concat(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails,' +
-            '   group_concat(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels' +
-            ' FROM user' +
-            ' LEFT JOIN user_email ON user_email.user = user.id' +
-            ' LEFT JOIN user_tel ON user_tel.user = user.id' +
-            ' WHERE user.id = ? ' +
-            ' GROUP BY user.id',
-            [id],
-            function (err, rows) {
+    var id = req.params.id;
+    etc.db.query('SELECT ' +
+        '   user.full_name, user.short_name, user.avatar,' +
+        '   group_concat(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails,' +
+        '   group_concat(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels,' +
+        '   active_user.init, active_user.expiration' +
+        ' FROM user' +
+        ' LEFT JOIN user_email ON user_email.user = user.id' +
+        ' LEFT JOIN user_tel ON user_tel.user = user.id' +
+        ' LEFT JOIN active_user ON active_user.user = user.id ' +
+        ' WHERE user.id = ? ' +
+        ' GROUP BY user.id',
+        [id],
+        function (err, rows) {
 
-                if (err) {
-                    return res.status(500);
-                }
-                var user = rows[0];
+            if (err) {
+                return res.status(500);
+            }
+            var user = rows[0];
 
-                if (user.avatar) {
-                    user.avatar = '/media/u/' + id + '/1/' + user.avatar;
-                }
+            if (user.avatar) {
+                user.avatar = '/media/u/' + id + '/1/' + user.avatar;
+            }
 
-                user.emails = user.emails ? user.emails.split(',') : [];
-                user.tels = user.tels ? user.tels.split(',') : [];
-                res.json(user);
-            });
+            user.emails = user.emails ? user.emails.split(',') : [];
+            user.tels = user.tels ? user.tels.split(',') : [];
+            user.disabled = user.init === null;
+            user.init = (user.init) ? user.init.toYMD().substring(0, 10) : null;
+            user.expiration = (user.expiration) ? user.expiration.toYMD().substring(0, 10) : null;
+            res.json(user);
+        });
 };
 
 /*jslint nomen: false*/
