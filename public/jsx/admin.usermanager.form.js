@@ -1,6 +1,20 @@
 /** @jsx React.DOM */
 (function (window, $) {
     "use strict";
+    function Date_toYMD() {
+        var year, month, day;
+        year = String(this.getFullYear());
+        month = String(this.getMonth() + 1);
+        if (month.length === 1) {
+            month = "0" + month;
+        }
+        day = String(this.getDate());
+        if (day.length === 1) {
+            day = "0" + day;
+        }
+        return year + "-" + month + "-" + day;
+    }
+    Date.prototype.toYMD = Date_toYMD;
 
     var acw = window.acw,
         components = acw.components,
@@ -24,7 +38,7 @@
             return (<li className='list-group-item'>
                     <span>{this.props.item}</span>
                     { this.props.removeUserContact
-                        ? <a aria-hidden="true" className="close" title="Remover" onClick={this.onCloseClick}>×</a>
+                        ? <a href='#' aria-hidden="true" className="close" title="Remover" onClick={this.onCloseClick}>×</a>
                         : ''
                     }
             </li>)
@@ -55,11 +69,11 @@
             return (<div>
                     <div className='row'>
                         <div className='col-md-5'>
-                            <div className='form-group'>
-                                <label>
-
-                                </label>
-                            </div>
+                            <form role='form'>
+                                <div className='form-group'>
+                                    <input type='email' className='form-control' required={true} placeholder='Novo email' />
+                                </div>
+                            </form>
                             <ContactList list={this.props.emails} removeUserContact={this.props.removeUserContact} />
                             <ContactList list={this.props.tels} />
                         </div>
@@ -73,6 +87,12 @@
     });
     SelectedUser = React.createClass({
         mixins: [React.addons.LinkedStateMixin],
+        setExpiration: function () {
+            this.setState({expiration: (new Date()).toYMD()});
+        },
+        activeUserNow: function () {
+            this.setState({init: (new Date()).toYMD(), disabled: false});
+        },
         removeUserContact: function(email) {
             var emails = this.state.emails, index = emails.indexOf(email);
             if (index >= 0) {
@@ -87,8 +107,10 @@
                 emails: [],
                 tels: [],
                 avatar: null,
-                init: new Date(),
-                end: null
+                init: null,
+                expiration: null,
+                disabled: true,
+                wasDisabled: true
             };
         },
         componentWillReceiveProps: function(new_props){
@@ -101,60 +123,91 @@
             
             $.get('/admin/user/' + new_props.user)
                 .done(function (user) {
+                    user.disabled = user.init === null;
+                    user.wasDisabled = user.disabled;
                     this.setState(user);
                 }.bind(this));
         },
+        componentDidUpdate: function () {
+            $(this.getDOMNode()).find('#userSetInit').datepicker({
+                
+            });
+        },
         render: function () {
+            var userSwitch = (
+                    <div className='userSwitch'>
+                        <div className='form-group row'>
+                            <div className='col-md-6'>
+                                <label htmlFor='userSetInit'>Usuário ativado em</label>
+                                <input type='text' 
+                                    id='userSetInit'
+                                    className='date-picker form-control' 
+                                    valueLink={this.linkState('init')}
+                                    readOnly={this.props.user && !this.state.wasDisabled} />
+                            </div>
+                            <div className='col-md-6'>
+                                <label htmlFor='userSetExpiration'>Data de expiração</label>
+                                    {this.state.expiration
+                                        ? (<input type='text' 
+                                            id='userSetExpiration'
+                                            className='date-picker form-control' 
+                                            valueLink={this.linkState('expiration')} />)
+                                        : (<div>
+                                                <input type='hidden' 
+                                                    id='userSetExpiration'/>
+                                                {'nunca ― '}
+                                                <a href='#' onClick={this.setExpiration}>mudar</a>
+                                            </div>)
+                                    }
+                            </div>  
+                        </div>
+                    <button type='submit' className="btn btn-default">Salvar</button>
+                    </div>);
+
+            if(this.state.disabled){
+                userSwitch = (<div className='text-danger userSwitch'>
+                    <strong>Usuário desativado, <a href='#' onClick={this.activeUserNow}>ativar</a></strong>
+                </div>);
+            }
             return (<div className='selectedUser jumbotron'>
                 <form action={'/admin/user' + 
                         ( this.props.user 
                             ? '/' + this.props.user : '' ) + '/name'} method='POST'>
                     <div className='row'>
-                        <div className='col-md-2 userAvatarThumbContainer'>
+                        <div className='col-md-3 userAvatarThumbContainer'>
                             <span></span>
                             <UserAvatar src={this.state.avatar} />
                         </div>
-                        <div className='col-md-3'>
-                            <div className='form-group'>
-                                <label htmlFor='userShortName'>Primeiro nome/apelido</label>
-                                <input id='userShortName'
-                                    name='short_name' 
-                                    className='form-control'
-                                    type='text' required={true} 
-                                    readOnly={this.props.user !== null}
-                                    valueLink={this.linkState('short_name')} />
+                        <div className='col-md-9'>
+                            <div className='row'>
+                                <div className='col-md-4'>
+                                    <div className='form-group'>
+                                        <label htmlFor='userShortName'>Primeiro nome/apelido</label>
+                                        <input id='userShortName'
+                                            name='short_name' 
+                                            className='form-control'
+                                            type='text' required={true} 
+                                            readOnly={this.props.user !== null}
+                                            valueLink={this.linkState('short_name')} />
+                                    </div>
+                                </div>
+                                <div className='col-md-8'>
+                                    <div className='form-group'>
+                                        <label htmlFor='userFullName'>Completo</label>
+                                        <input id='userFullName'
+                                            name='full_name' 
+                                            className='form-control'
+                                            type='text' required={true} 
+                                            readOnly={this.props.user !== null}
+                                            valueLink={this.linkState('full_name')} />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div className='col-md-7'>
-                            <div className='form-group'>
-                                <label htmlFor='userFullName'>Completo</label>
-                                <input id='userFullName'
-                                    name='full_name' 
-                                    className='form-control'
-                                    type='text' required={true} 
-                                    readOnly={this.props.user !== null}
-                                    valueLink={this.linkState('full_name')} />
-                            </div>
+                            {userSwitch}
                         </div>
                     </div>
-                    /*{
-                        UTILIZAR bootstrap-datepicker
-                        CHECAR, se usuário existente
-                            Se usuário existente 
-                                se ativo:
-                                    mostrar apenas campo data de expiração/botão "desativar"
-                                se desativado:
-                                    mostrar botão "ativar"/data de ativação
-                                        & 
-                                    campo data de expiração/botão "desativar"
-                            Se novo usuário
-                                mostrar botão "ativar"/data de ativação
-                                    & 
-                                campo data de expiração/botão "desativar"
-
-                    }*/
-                    
                 </form>
+                
                 {this.props.user
                     ? (<ExistingUserForm 
                         emails={this.state.emails}

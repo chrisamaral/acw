@@ -50,7 +50,17 @@ input[type="search"]{
     height: 100%;
     vertical-align: middle;
 }
+
 .ContactList>li:first-child{
     color: green;
     font-weight: bold;
+}
+.date-picker{
+    width: 200px !important;
+}
+.userSwitch{
+    margin: 1em 0;
+}
+.userSwitch a{
+    margin: 0 2px;
 }

@@ -128,7 +128,7 @@
             componentDidMount: function () {
                 var js = ['/js/' + window.jsPath + '/admin.usermanager.form.js'];
                 
-                LazyLoad.js(, function(){
+                LazyLoad.js(js, function(){
                     this.setState({formLoaded: true});
                     this.reloadList();
                 }.bind(this));

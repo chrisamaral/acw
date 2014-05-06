@@ -167,7 +167,6 @@ exports.getUser = function (req, res) {
 
             user.emails = user.emails ? user.emails.split(',') : [];
             user.tels = user.tels ? user.tels.split(',') : [];
-            user.disabled = user.init === null;
             user.init = (user.init) ? user.init.toYMD().substring(0, 10) : null;
             user.expiration = (user.expiration) ? user.expiration.toYMD().substring(0, 10) : null;
             res.json(user);

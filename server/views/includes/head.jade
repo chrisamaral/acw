@@ -27,7 +27,9 @@ html
                         span.icon-bar
                     a(class="navbar-brand", href="/")
                         span.brandLogo
-                        span.brandName ACW Automação e Sistemas
+                        span.brandName 
+                            if isDev === false
+                                | ACW Automação e Sistemas
                 div(class="navbar-collapse collapse")
                     ul.nav.navbar-nav.navbar-right
                         if user
