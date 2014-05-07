@@ -22,9 +22,23 @@ input[type="search"]{
 
 }
 .userList{
+    min-height: 100px;
+    border: 1px solid rgb(220, 220, 220);
+}
+.userList>.others{
     max-height: 30em;
     overflow-y: auto;
-    border: 1px solid rgb(220, 220, 220);
+}
+.userList>.selected{
+    z-index: 1;
+    box-shadow: 0 3px 4px rgba(0,0,0,0.2);
+    border-bottom: 1px solid rgb(220, 220, 220);
+}
+.theOne{
+    font-weight: bold;
+    font-size: medium;
+
+
 }
 .userListItem{
     border: none;
@@ -37,8 +51,9 @@ input[type="search"]{
 .userListItem:last-child{
     padding-bottom: 1em;
 }
-.userListItem .theOne{
-    margin-right: 5px;
+
+.deletedUser{
+    color: lightgrey !important;
 }
 .userAvatarThumb{
     height: 100%;
@@ -55,12 +70,6 @@ input[type="search"]{
     color: green;
     font-weight: bold;
 }
-.date-picker{
-    width: 200px !important;
-}
-.userSwitch{
-    margin: 1em 0;
-}
-.userSwitch a{
-    margin: 0 2px;
+.ExistingUserForm{
+    margin: 1em;
 }

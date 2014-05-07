@@ -50,17 +50,16 @@
         },
         render: function () {
             var user = this.props.user,
-                label = user.full_name || user.short_name || 'sem nome ...';
-            
-            label = (user.active === 0) ? (<del title='Usuário desativado'>{label}</del>) : label;
-            label = this.props.isSelected 
-                ? (<strong>
-                        <span className='theOne'>{'❯'}</span>
-                        {label}
-                    </strong>)
-                : label;
+                label = user.full_name || user.short_name || 'sem nome ...',
+                classes = React.addons.classSet({
+                    'list-group-item': true,
+                    userListItem: true,
+                    deletedUser: (user.active === 0),
+                    theOne: this.props.isSelected
+                });
 
-            return (<a href='#' onClick={this.userClick} className='list-group-item userListItem'>{label}</a>);
+            label = this.props.isSelected ? '❯ ' + label : label;
+            return (<a href='#' onClick={this.userClick} className={classes}>{label}</a>);
         }
     });
     
@@ -78,7 +77,6 @@
                         if (!this.props.reachedTop) {
                             $(list).animate({scrollTop: newScroll + scrollCorrect});
                         }
-
                     }
 
                     if (list.scrollHeight - (newScroll + $(list).height()) < 10) {
@@ -91,14 +89,25 @@
                 }.bind(this), 1000);
             },
             render: function () {
+                var theOne = this.props.selectedUser;
                 return (
-                    <div className='userList list-group' ref='userList' onScroll={this.scrollChange}>
-                        {this.props.users.map(function(user, index){
-                            return (<UserItem 
-                                key={user.id} user={user} 
-                                onUserClick={this.props.onUserClick}
-                                isSelected={this.props.selectedUser === user.id} />);
-                        }.bind(this))}
+                    <div className='userList list-group'>
+                        {theOne ?
+                            (<div className='selected'>
+                                <UserItem
+                                    key={theOne.id} user={theOne}
+                                    onUserClick={this.props.onUserClick}
+                                    isSelected={true} />
+                            </div>)
+                        : ''}
+                        <div className='others' ref='userList' onScroll={this.scrollChange}>
+                            {this.props.users.map(function(user, index){
+                                return (<UserItem
+                                    key={user.id} user={user}
+                                    onUserClick={this.props.onUserClick}
+                                    isSelected={false} />);
+                            }.bind(this))}
+                        </div>
                     </div>
                 )
             }
@@ -122,7 +131,15 @@
                     }
                 };
             },
+            onUserUpdate: function(userID){
+                userID = userID && userID.length ? userID : null;
+                if (userID) {
+                    this.setState({selectedUser: userID});
+                }
+                this.reloadList();
+            },
             selectUser: function(userID){
+                userID = this.state.selectedUser === userID ? null : userID;
                 this.setState({selectedUser: userID});
             },
             componentDidMount: function () {
@@ -163,10 +180,12 @@
                 
             },
             reloadList: function(){
-                var oldOffset = this.state.query.offset;
-                $.get('/admin/users', this.state.query)
+                var oldOffset = this.state.query.offset, query = _.merge({}, this.state.query);
+                if (this.state.selectedUser) {
+                    query.user = this.state.selectedUser;
+                }
+                $.get('/admin/users', query)
                     .done(function (response) {
-
                         this.setState({
                             users: response.users,
                             reachedTop: (response.offset === 0),
@@ -178,10 +197,10 @@
                     }.bind(this));
             },
             render: function () {
-                var form = '...';
+                var form = '...', selected = this.state.selectedUser;
                 if (this.state.formLoaded) {
                     SelectedUser = components.SelectedUser;
-                    form = (<SelectedUser user={this.state.selectedUser}/>);
+                    form = (<SelectedUser user={this.state.selectedUser} selectUser={this.onUserUpdate} />);
                 }
                 return (<div className='row userTabWrapper'>
                     <div className='col-md-4'>
@@ -190,8 +209,12 @@
                             filterText={this.state.query.filterText}
                             onUserInput={this.searchInputChange} />
                         <UserList 
-                            users={this.state.users} 
-                            selectedUser={this.state.selectedUser}
+                            users={this.state.users.filter(function(user){
+                                return user.id !== selected;
+                            })}
+                            selectedUser={this.state.users.filter(function(user){
+                                return user.id === selected;
+                            })[0]}
                             onUserClick={this.selectUser}
                             onOffsetChange={this.offsetChange} 
                             reachedTop={this.state.reachedTop}

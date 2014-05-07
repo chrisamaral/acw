@@ -1,20 +1,30 @@
 /** @jsx React.DOM */
 (function (window, $) {
     "use strict";
-    function Date_toYMD() {
+    function date_toDMY(d) {
         var year, month, day;
-        year = String(this.getFullYear());
-        month = String(this.getMonth() + 1);
+        year = String(d.getFullYear());
+        month = String(d.getMonth() + 1);
         if (month.length === 1) {
             month = "0" + month;
         }
-        day = String(this.getDate());
+        day = String(d.getDate());
         if (day.length === 1) {
             day = "0" + day;
         }
-        return year + "-" + month + "-" + day;
+        return day + '/' + month + '/' + year;
     }
-    Date.prototype.toYMD = Date_toYMD;
+    function dMY_toDate(str) {
+        var ds = str.split('/');
+        return new Date(
+            parseInt(ds[2], 10),
+            parseInt(ds[1], 10) - 1,
+            parseInt(ds[0], 10),
+            0,
+            0,
+            0
+        );
+    }
 
     var acw = window.acw,
         components = acw.components,
@@ -31,17 +41,8 @@
         }
     });
     ContactItem = React.createClass({
-        onCloseClick: function() {
-            this.props.removeUserContact(this.props.item);
-        },
         render: function(){
-            return (<li className='list-group-item'>
-                    <span>{this.props.item}</span>
-                    { this.props.removeUserContact
-                        ? <a href='#' aria-hidden="true" className="close" title="Remover" onClick={this.onCloseClick}>×</a>
-                        : ''
-                    }
-            </li>)
+            return (<li className='list-group-item'><span>{this.props.item}</span></li>)
         }
     });
     ContactList = React.createClass({
@@ -49,56 +50,75 @@
             return (<ul className='list-group ContactList'>
                 {
                     this.props.list.map(function(item){
-                        return (
-                            this.props.removeUserContact
-                                ? <ContactItem 
-                                    item={item} 
-                                    key={item} 
-                                    removeUserContact={this.props.removeUserContact} />
-                                : <ContactItem 
-                                    item={item} 
-                                    key={item} />
-                        );
+                        return (<ContactItem item={item} key={item} />);
                     }.bind(this))
                 }        
             </ul>);
         }
     });
     ExistingUserForm = React.createClass({
+        setNewEmail: function (e) {
+            e.preventDefault();
+            var input = this.refs.newEmail.getDOMNode();
+            this.props.newUserEmail(input.value);
+            input.value = '';
+        },
         render: function () {
-            return (<div>
-                    <div className='row'>
-                        <div className='col-md-5'>
-                            <form role='form'>
-                                <div className='form-group'>
-                                    <input type='email' className='form-control' required={true} placeholder='Novo email' />
-                                </div>
-                            </form>
-                            <ContactList list={this.props.emails} removeUserContact={this.props.removeUserContact} />
-                            <ContactList list={this.props.tels} />
+            return (<div className='ExistingUserForm'>
+                        <div className='row'>
+                            <div className='col-md-5'>
+                                <form role='form' onSubmit={this.setNewEmail}>
+                                    <div className='form-group'>
+                                        <input ref='newEmail' name='email'
+                                            type='email' className='form-control' required={true} placeholder='Novo email' />
+                                    </div>
+                                </form>
+                                <ContactList list={this.props.emails} />
+                                <ContactList list={this.props.tels} />
+                            </div>
+                            <div className='col-md-7'>
+                                lista de empresas
+                            </div>
                         </div>
-                        <div className='col-md-7'>
-                            lista de empresas
-                        </div>
-                    </div>
                 </div>);
         }
         
     });
     SelectedUser = React.createClass({
         mixins: [React.addons.LinkedStateMixin],
-        setExpiration: function () {
-            this.setState({expiration: (new Date()).toYMD()});
+        submitUserChanges: function(e){
+            var form = e.currentTarget, b = this.refs.submitUserChanges.getDOMNode();
+            b.disabled = true;
+            $.post(form.action, $(form).serialize(), 'text')
+                .done(function(newID){
+                    this.props.selectUser(newID);
+                }.bind(this)).always(function(){
+                    b.disabled = false;
+                });
+            e.preventDefault();
         },
-        activeUserNow: function () {
-            this.setState({init: (new Date()).toYMD(), disabled: false});
+        newUserEmail: function (newEmail) {
+            this.setState({emails: this.state.emails.concat([newEmail])});
+            $.post('/admin/user/' + this.props.user + '/email', {email: newEmail});
         },
-        removeUserContact: function(email) {
-            var emails = this.state.emails, index = emails.indexOf(email);
-            if (index >= 0) {
-                emails.splice(index, 1);
-                this.setState({emails: emails});
-            }
+        setExpiration: function (e) {
+            e.preventDefault();
+            this.setState({
+                expiration: date_toDMY(new Date())
+            });
+        },
+        activeUserNow: function (e) {
+            e.preventDefault();
+            this.setState({
+                init: date_toDMY(new Date()),
+                disabled: false
+            });
+        },
+        disableUserNow: function () {
+            this.setState({
+                expiration: date_toDMY(new Date()),
+                disabled: true
+            });
         },
         getInitialState: function () {
             return {
@@ -129,50 +149,73 @@
                 }.bind(this));
         },
         componentDidUpdate: function () {
-            $(this.getDOMNode()).find('#userSetInit').datepicker({
-                
-            });
+            if (this.state.disabled) {
+                return;
+            }
+            var self = this;
+            function setDatePickers(){
+                if (self.state.disabled || !self.state.expiration) {
+                    return;
+                }
+
+                $('#setUserExpiration').datepicker({
+                    format: 'dd/mm/yyyy',
+                    startDate: new Date()
+                });
+            }
+            
+            if ($.fn.datepicker) {
+                return setDatePickers();
+            }
+
+            LazyLoad.css(['/js/ext/bootstrap-datepicker/datepicker.css']);
+            LazyLoad.js(['/js/ext/bootstrap-datepicker/js/bootstrap-datepicker.js'], setDatePickers);
+            
         },
         render: function () {
             var userSwitch = (
                     <div className='userSwitch'>
                         <div className='form-group row'>
                             <div className='col-md-6'>
-                                <label htmlFor='userSetInit'>Usuário ativado em</label>
-                                <input type='text' 
-                                    id='userSetInit'
-                                    className='date-picker form-control' 
-                                    valueLink={this.linkState('init')}
-                                    readOnly={this.props.user && !this.state.wasDisabled} />
+                                <label>Usuário ativado em</label>
+                                <p type='text' className='form-control-static'>{this.state.init}</p>
                             </div>
                             <div className='col-md-6'>
-                                <label htmlFor='userSetExpiration'>Data de expiração</label>
+                                <label htmlFor='setUserExpiration'>Data de expiração</label>
                                     {this.state.expiration
-                                        ? (<input type='text' 
-                                            id='userSetExpiration'
-                                            className='date-picker form-control' 
-                                            valueLink={this.linkState('expiration')} />)
-                                        : (<div>
+                                        ? (<div className='input-group'>
+                                                <input type='text'
+                                                    name='expiration'
+                                                    valueLink={this.linkState('expiration')}
+                                                    id='setUserExpiration'
+                                                    className='date-picker form-control'  />
+                                                <span className="input-group-btn">
+                                                    <button onClick={this.disableUserNow}
+                                                        className="btn btn-danger" type="button">Desativar</button>
+                                                </span>
+                                          </div>)
+                                        : (<p>
                                                 <input type='hidden' 
-                                                    id='userSetExpiration'/>
+                                                    name='expiration'
+                                                    value={null}
+                                                    id='setUserExpiration'/>
                                                 {'nunca ― '}
                                                 <a href='#' onClick={this.setExpiration}>mudar</a>
-                                            </div>)
+                                            </p>)
                                     }
                             </div>  
                         </div>
-                    <button type='submit' className="btn btn-default">Salvar</button>
                     </div>);
 
             if(this.state.disabled){
-                userSwitch = (<div className='text-danger userSwitch'>
+                userSwitch = (<p className='text-danger userSwitch'>
                     <strong>Usuário desativado, <a href='#' onClick={this.activeUserNow}>ativar</a></strong>
-                </div>);
+                </p>);
             }
             return (<div className='selectedUser jumbotron'>
-                <form action={'/admin/user' + 
+                <form onSubmit={this.submitUserChanges} action={'/admin/user' + 
                         ( this.props.user 
-                            ? '/' + this.props.user : '' ) + '/name'} method='POST'>
+                            ? '/' + this.props.user : '' ) } method='POST'>
                     <div className='row'>
                         <div className='col-md-3 userAvatarThumbContainer'>
                             <span></span>
@@ -204,15 +247,16 @@
                                 </div>
                             </div>
                             {userSwitch}
+                            <button ref='submitUserChanges' type='submit' className="btn btn-default">Salvar</button>
                         </div>
                     </div>
                 </form>
                 
                 {this.props.user
                     ? (<ExistingUserForm 
-                        emails={this.state.emails}
-                        tels={this.state.tels}
-                        removeUserContact={this.removeUserContact} />)
+                            newUserEmail={this.newUserEmail}
+                            emails={this.state.emails}
+                            tels={this.state.tels} />)
                     : ''
                 }
             </div>);

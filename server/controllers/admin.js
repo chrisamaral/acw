@@ -7,3 +7,6 @@ etc.express.get('/admin', etc.authorized.can('access admin view'), function (req
 etc.express.get('/admin/tabs', etc.authorized.can(PERMS), ops.getTabs);
 etc.express.get('/admin/users', etc.authorized.can(PERMS), ops.getUsers);
 etc.express.get('/admin/user/:id', etc.authorized.can(PERMS), ops.getUser);
+etc.express.post('/admin/user', etc.authorized.can(PERMS), ops.newUser);
+etc.express.post('/admin/user/:id', etc.authorized.can(PERMS), ops.saveUser);
+etc.express.post('/admin/user/:id/email', etc.authorized.can(PERMS), ops.newEmail);
