@@ -23,6 +23,7 @@ etc.express.get('/user/avatar', etc.authorized.can('access private page'), funct
     }
 });
 etc.express.post('/user/avatar', etc.authorized.can('access private page'), function (req, res) {
+    //@TODO: migrar do módulo formidable pro multiparty
     var tmpFile = null, form = new formidable.IncomingForm();
     function answerIt(status, txt) {
         if (tmpFile) {

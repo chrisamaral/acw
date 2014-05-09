@@ -14,5 +14,3 @@ etc.express.get('/admin/apps', etc.authorized.can(PERMS), ops.getApps);
 etc.express.post('/admin/app', etc.authorized.can(PERMS), ops.saveApp);
 etc.express.post('/admin/app/:id', etc.authorized.can(PERMS), ops.saveApp);
 etc.express.post('/admin/app/:id/icon', etc.authorized.can(PERMS), ops.saveIcon);
-
-//@TODO: fazer id do aplicativo permanente
