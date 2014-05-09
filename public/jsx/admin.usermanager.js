@@ -99,7 +99,7 @@
                                     onUserClick={this.props.onUserClick}
                                     isSelected={true} />
                             </div>)
-                        : ''}
+                        : null}
                         <div className='others' ref='userList' onScroll={this.scrollChange}>
                             {this.props.users.map(function(user, index){
                                 return (<UserItem

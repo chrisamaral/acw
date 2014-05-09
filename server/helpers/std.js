@@ -88,3 +88,14 @@ exports.escapeEmAll = function (a) {
         return etc.db.escape(elem);
     });
 };
+exports.dMY_toDate = function(str) {
+    var ds = str.split('/');
+    return new Date(
+        parseInt(ds[2], 10),
+            parseInt(ds[1], 10) - 1,
+        parseInt(ds[0], 10),
+        0,
+        0,
+        0
+    );
+}

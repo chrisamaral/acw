@@ -10,14 +10,49 @@
         AppList,
         AppItem,
         AppForm,
-        AppIconForm;
+        AppIconForm,
+        ProgressBar,
+        AlertList;
 
     function App() {
-        this.id = '';
+        this.id = null;
+        this.abbr = '';
         this.name = '';
         this.active = false;
         this.icon = null;
     }
+    ProgressBar = React.createClass({
+        render: function () {
+            var progStyle = {width: this.props.progress + '%'};
+            return (<div className='progress'>
+                        <div className="progress-bar"
+                            role="progressbar" aria-valuenow={this.props.progress}
+                            aria-valuemin="0" aria-valuemax="100" style={progStyle}>
+                                {this.props.progress + '%'}
+                        </div>
+                    </div>);
+        }
+    });
+    components.ProgressBar = ProgressBar;
+
+    AlertList = React.createClass({
+        render: function() {
+            return (
+                <div className='formAlerts'>
+                    {_.map(this.props.alerts, function (alert, key) {
+                        var classes = {alert: true};
+                        classes['alert-' + alert[0]] = true;
+                        return (
+                            <div key={key} className={React.addons.classSet(classes)}>
+                                <button data-alert-id={key} onClick={this.props.dismissAlert} type="button" className="close" aria-hidden="true">&times;</button>
+                                    {alert[1]}
+                            </div>);
+                    }.bind(this))}
+                </div>);
+        }
+    });
+    components.AlertList = AlertList;
+
     AppIconForm = React.createClass({
         mixins: [React.addons.LinkedStateMixin],
         getInitialState: function(){
@@ -67,11 +102,14 @@
                 var new_alerts = that.state.alerts;
                 if (this.status === 200) {
                     that.props.setIcon(this.responseText);
-                    that.setState({preview: null, uploadProgress: 0});
+                    that.setState({preview: null});
                 } else {
                     new_alerts[uniqueId()] = ['danger', (<div><strong>{this.responseText}</strong> Não foi possível salvar o novo ícone</div>)];
-                    that.setState({alerts: new_alerts, preview: null, uploadProgress: 0});
+                    that.setState({alerts: new_alerts, preview: null});
                 }
+                setTimeout(function(){
+                    that.setState({uploadProgress: 0});
+                }, 1000);
                 that.refs.appIconPreview.getDOMNode().value = '';
             };
             xhr.upload.onprogress = function (e) {
@@ -82,9 +120,16 @@
             xhr.send(form);
         },
         render: function () {
-            var progStyle = {width: this.state.uploadProgress + '%'};
+
             return (<form onSubmit={this.handleSubmit} role='form' action={'/admin/app/' + this.props.id + '/icon'} encType='multipart/form-data'>
                 <input name='id' type='hidden' value={this.props.id} />
+                <div className='iconPreview'>
+                    <span className='helper'></span>
+                    <img className='originalIcon' src={this.props.icon ? this.props.icon : '/img/none.png'}/>
+                    <span className='glyphicon glyphicon-hand-right'></span>
+                    <img className='previewIcon' src={this.state.preview ? this.state.preview : '/img/none.png'}/>
+                </div>
+                <AlertList alerts={this.state.alerts} dismissAlert={this.dismissAlert} />
                 <div className='input-group'>
                     <input ref='appIconPreview'
                         name='icon'
@@ -96,41 +141,30 @@
                         <button className='btn btn-success' type='submit'>Salvar</button>
                     </div>
                 </div>
-                <div className='formAlerts'>
-                    {_.map(this.state.alerts, function(alert, key){
-                        var classes = {alert: true};
-                        classes['alert-' + alert[0]] = true;
-                        return (<div key={key} className={React.addons.classSet(classes)}>
-                                <button data-alert-id={key} onClick={this.dismissAlert} type="button" className="close" aria-hidden="true">&times;</button>
-                                {alert[1]}
-                            </div>
-                        );
-                    }.bind(this))}
-                </div>
-
                 {this.state.uploadProgress
-                    ? (<div className='progress'>
-                        <div className="progress-bar"
-                                role="progressbar" aria-valuenow={this.state.uploadProgress}
-                                aria-valuemin="0" aria-valuemax="100"
-                                style={progStyle}>
-                            {this.state.uploadProgress + '%'}
-                        </div>
-                    </div>) : ''
+                    ? <ProgressBar progress={this.state.uploadProgress} />
+                    : null
                 }
-                <div className='iconPreview'>
-                    <span className='helper'></span>
-                    <img className='originalIcon' src={this.props.icon ? this.props.icon : '/img/none.png'}/>
-                    <span className='glyphicon glyphicon-hand-right'></span>
-                    <img className='previewIcon' src={this.state.preview ? this.state.preview : '/img/none.png'}/>
-                </div>
             </form>);
         }
     });
     AppForm = React.createClass({
         mixins: [React.addons.LinkedStateMixin],
         getInitialState: function () {
-            return {id: this.props.id, name: this.props.name, active: this.props.active};
+            return {
+                id: this.props.id,
+                abbr: this.props.abbr,
+                name: this.props.name,
+                active: this.props.active,
+                alerts: {}
+            };
+        },
+        dismissAlert: function (e) {
+            e.preventDefault();
+            var new_alerts = this.state.alerts;
+            delete new_alerts[$(e.currentTarget).data('alert-id')];
+            this.setState({alerts: new_alerts});
+            return false;
         },
         onCheck: function(e){
             var input = e.currentTarget;
@@ -139,31 +173,40 @@
         handleSubmit: function (e) {
             e.preventDefault();
             $.post(e.currentTarget.action, $(e.currentTarget).serialize())
-                .done(function(){
+                .done(function(id){
                     this.props.setSelected({
-                        id: this.state.id,
+                        id: id,
+                        abbr: this.state.abbr,
                         name: this.state.name,
                         active: this.state.active
                     }, true);
+                }.bind(this))
+                .fail(function(xhr){
+                    var new_alerts = this.state.alerts;
+                    new_alerts[uniqueId()] = ['danger', xhr.responseText];
+                    this.setState({
+                        alerts: new_alerts
+                    });
                 }.bind(this));
         },
         componentWillReceiveProps: function(props){
             this.setState(_.merge(this.state, props));
         },
         render: function () {
-            var notNew = this.props.id && this.props.id.length;
-            return (<form action={'/admin/app' + (notNew ? '/' + this.props.id : '')}
+            var notNew = this.props.id !== null;
+            return (<form action={this.props.action + (notNew ? '/' + this.props.id : '')}
                         role='form' onSubmit={this.handleSubmit}>
                 <div className='row'>
                     <div className='col-md-4 form-group'>
-                        <label htmlFor='appId'>Abreviação</label>
-                        <input id='appId' name='id' className='form-control' type='text' required={true} readOnly={notNew} valueLink={this.linkState('id')} />
+                        <label htmlFor='itemAbbr'>Abreviação</label>
+                        <input id='itemAbbr' name='abbr' maxLength={15} className='form-control' type='text' required={true} valueLink={this.linkState('abbr')} />
                     </div>
                     <div className='col-md-8 form-group'>
-                        <label htmlFor='appName'>Nome</label>
-                        <input id='appName' name='name' className='form-control' type='text' required={true} valueLink={this.linkState('name')} />
+                        <label htmlFor='itemName'>Nome</label>
+                        <input id='itemName' name='name' className='form-control' type='text' required={true} valueLink={this.linkState('name')} />
                     </div>
                 </div>
+                <AlertList alerts={this.state.alerts} dismissAlert={this.dismissAlert} />
                 <div className='row'>
                     <div className='col-md-4'>
                         <div className='checkbox'>
@@ -181,9 +224,10 @@
             </form>);
         }
     });
+    components.StdForm = AppForm;
 
     AppItem = React.createClass({
-        clickApp: function (e) {
+        clickItem: function (e) {
             e.preventDefault();
             this.props.setSelected(this.props.item);
         },
@@ -196,20 +240,21 @@
                             stdListItem: true,
                             deleted: !this.props.item.active
                         })}
-                    onClick={this.clickApp}>
+                    onClick={this.clickItem}>
                 {this.props.selected ? '❯ ' + this.props.item.name : this.props.item.name}</a>
             );
         }
     });
+    components.StdListItem;
 
     AppList = React.createClass({
         getInitialState: function(){
-            return {apps: []};
+            return {items: []};
         },
         reloadList: function(){
-            $.get('/admin/apps')
-                .done(function(apps){
-                    this.setState({apps: apps});
+            $.get(this.props.uri)
+                .done(function(items){
+                    this.setState({items: items});
                 }.bind(this));
         },
         componentDidMount: function(){
@@ -220,7 +265,7 @@
         },
         render: function(){
             var selected = this.props.selected,
-                theOne = this.state.apps.filter(function(item){
+                theOne = this.state.items.filter(function(item){
                     return item.id === selected.id;
                 })[0];
             return (<div className='stdList list-group'>
@@ -232,10 +277,10 @@
                             selected={true}
                             setSelected={this.props.setSelected} />
                     </div>)
-                    : ''}
-                <div className='others' ref='userList' onScroll={this.scrollChange}>
+                    : null}
+                <div className='others' onScroll={this.scrollChange}>
                     {
-                        this.state.apps
+                        this.state.items
                             .filter(function (item) {
                                 return item.id !== selected.id;
                             })
@@ -250,6 +295,8 @@
             </div>);
         }
     });
+    components.StdList = AppList;
+
     components.AppManager =  React.createClass({
         getInitialState: function () {
             return ({selected: new App()});
@@ -268,20 +315,25 @@
             return (
                 <div className='row'>
                     <div className='col-md-4'>
-                        <AppList selected={this.state.selected} setSelected={this.setSelected} />
+                        <AppList
+                            uri='/admin/apps'
+                            selected={this.state.selected}
+                            setSelected={this.setSelected} />
                     </div>
                     <div className='col-md-8'>
                         <AppForm
+                            action='/admin/app'
                             id={this.state.selected.id}
+                            abbr={this.state.selected.abbr}
                             name={this.state.selected.name}
                             active={this.state.selected.active}
                             setSelected={this.setSelected} />
-                        {this.state.selected.id && this.state.selected.id.length
+                        {this.state.selected.id
                             ? <AppIconForm
                                     setIcon={this.setIcon}
                                     id={this.state.selected.id}
                                     icon={this.state.selected.icon} />
-                            : ''
+                            : null
                         }
                     </div>
                 </div>
