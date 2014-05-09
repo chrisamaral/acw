@@ -1,6 +1,12 @@
 /*jslint nomen: true*/
 "use strict";
-var etc = require('../base.js')(), _ = require('lodash'), async = require('async');
+var etc = require('../base.js')(),
+    _ = require('lodash'),
+    async = require('async'),
+    mkdirp = require('mkdirp'),
+    mv = require('mv'),
+    path = require('path'),
+    multiparty = require('multiparty');
 exports.getTabs = function (req, res) {
     var tabs = {
         UserManager: ['Geral', ['user.create', 'user.on', 'user.off', 'user.admin.on', 'user.admin.off']],
@@ -28,21 +34,6 @@ exports.getTabs = function (req, res) {
         res.json({tabs: avaibleTabs, user: user});
     });
 };
-function myUserCreation(callback) {
-    var db = this.db, user = this.user;
-    db.select('user.creation').where('user.id', user).get('user', function (err, rows) {
-
-        if (err) {
-            return callback(err);
-        }
-
-        if (!rows.length) {
-            return callback('Usuário inválido: ' + user);
-        }
-
-        return callback(null, rows[0].creation);
-    });
-}
 function filterThem(db, filterText) {
     if (!filterText) {
         return;
@@ -63,27 +54,30 @@ function filterThem(db, filterText) {
     db.where(where);
 }
 
-function countUsers(userCreation, callback) {
+function countUsers(callback) {
     var db = this.db, filterText = this.filterText,
         activeUsersOnly = this.activeUsersOnly;
+
     if (etc.ENV !== 'development') {
-        db.where('creation > ' + db.escape(userCreation.toYMD()));
+        db.where('user.creation > (select creation from user where id = ' + db.escape(this.me) + ' )');
     }
+
     if (filterText && !activeUsersOnly) {
         db.join('active_user', 'user.id = active_user.user', 'left');
     } else {
         db.join('active_user', 'user.id = active_user.user');
     }
+
     filterThem(db, filterText);
 
     db.count('user', function (err, count) {
         if (err) {
             callback(err);
         }
-        callback(null, userCreation, count);
+        callback(null, count);
     });
 }
-function listUsers(userCreation, usersCount, callback) {
+function listUsers(usersCount, callback) {
     var db = this.db, filterText = this.filterText,
         activeUsersOnly = this.activeUsersOnly,
         offset = this.offset;
@@ -91,8 +85,9 @@ function listUsers(userCreation, usersCount, callback) {
     offset = Math.max(0, Math.min(usersCount - 30, offset));
 
     if (etc.ENV !== 'development') {
-        db.where('creation > ' + db.escape(userCreation));
+        db.where('user.creation > (select creation from user where id = ' + db.escape(this.me) + ' )');
     }
+
 
     if (filterText && !activeUsersOnly) {
         db.join('active_user', 'user.id = active_user.user', 'left');
@@ -126,14 +121,15 @@ exports.getUsers = function (req, res) {
 
     etc.pool.getNewAdapter(function (db) {
         var tasks = [
-            myUserCreation.bind({db: db, user: req.user.id}),
             countUsers.bind({
                 db: db,
+                me: req.user.id,
                 filterText: filterText,
                 activeUsersOnly: activeUsersOnly
             }),
             listUsers.bind({
                 db: db,
+                me: req.user.id,
                 filterText: filterText,
                 activeUsersOnly: activeUsersOnly,
                 offset: offset
@@ -369,5 +365,132 @@ exports.newEmail = function (req, res) {
             }
             res.send(204);
         });
+};
+exports.getApps = function (req, res) {
+  etc.db.query('SELECT app.id, app.name, app.icon, active_app.init '+
+    'FROM app ' +
+    'LEFT JOIN active_app ON active_app.app = app.id ' +
+    'ORDER BY app.creation ',
+    function(err, rows){
+        if(err){
+            return res.send(500);
+        }
+        res.json(rows.map(function(app){
+            app.active = (app.init) ? true : false;
+            app.icon = app.icon ? '/media/a/' + app.id + '/' + app.icon : null;
+            return app;
+        }));
+    }
+  );
+};
+exports.saveApp = function(req, res){
+    var app = {id: req.body.id, name: req.body.name},
+        oldId = req.params.id,
+        enabled = req.body.active !== undefined;
+
+    oldId = oldId && oldId.length ? oldId : null;
+    app.id = oldId || app.id;
+
+    function updateApp (callback) {
+        etc.pool.getNewAdapter(function (db) {
+            function onSave(err, info) {
+                if (err) {
+                    return res.send(500);
+                }
+                callback(null, db);
+            }
+
+            if (!oldId) {
+                app.creation = (new Date()).toYMD();
+                db.insert('app', app, onSave);
+            } else {
+                db.where('id', app.id);
+
+                var noIdApp = _.merge({}, app);
+                delete noIdApp.id;
+
+                db.update('app', noIdApp, onSave);
+            }
+        });
+    }
+    function disableApp (db, callback) {
+        db.where('app', app.id);
+        db.delete('active_app', function(err, info){
+           if (err) {
+               return res.send(500);
+           }
+           callback(null, db);
+        });
+    }
+    function enableApp (db, callback) {
+        var grant = {app: app.id, init: (new Date()).toYMD()};
+        db.insert('active_app', grant, function () {
+            callback(null, db);
+        });
+    }
+
+    async.waterfall(
+        [updateApp, enabled ? enableApp : disableApp],
+        function(err, db){
+            db.releaseConnection();
+            if (err) {
+                return res.send(500);
+            }
+            res.send(204);
+        }
+    )
+};
+exports.saveIcon = function (req, res) {
+    var form = new multiparty.Form(), props = {app: req.params.id};
+
+    function makeDir (callback) {
+        mkdirp(this.path, function (err) {
+            if (err) {
+                return callback([500, 'Erro ao criar diretório da imagem']);
+            }
+            callback(null);
+        });
+    }
+    function moveFile (callback) {
+        mv(this.tmp, this.path + '/' + this.fileName, function(err){
+            if (err) {
+                console.log(err);
+                return callback([500, 'Erro ao mover imagem']);
+            }
+            callback();
+        });
+    }
+    function saveToDb (callback) {
+        etc.db.query('UPDATE app SET icon = ? WHERE id = ?', [this.fileName, this.app], function(err, info){
+            if (err) {
+                return callback([500, 'Erro ao salvar imagem']);
+            }
+            callback();
+        });
+    }
+
+    form.parse(req, function (err, formFields, formFiles) {
+
+        if (err || !formFiles || !formFiles.icon || !formFiles.icon[0] ) {
+            return callback([400, 'Imagem inválida']);
+        }
+
+        props.path = path.normalize(__dirname + "/../..") + "/public/media/a/" + props.app;
+        props.tmp = formFiles.icon[0].path;
+        props.fileName = etc.helpers.uniqueID() + path.extname(formFiles.icon[0].path);
+
+        async.waterfall([
+            makeDir.bind(props),
+            moveFile.bind(props),
+            saveToDb.bind(props)
+        ], function(err, appPath, fileName){
+            if (err) {
+                return res.status(err[0]).send(err[1]);
+            }
+            res.send('/media/a/' + this.app + '/' + this.fileName);
+        }.bind(props));
+    });
+
+
 };
 /*jslint nomen: false*/

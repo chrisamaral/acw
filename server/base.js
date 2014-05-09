@@ -59,7 +59,6 @@ module.exports = function (mysql) {
 
         Db = require('mysql-activerecord');
         resources.pool = new Db.Pool(require('./config/active.db.js'));
-
         resources.strftime = require('strftime');
         resources.startConnection();
         resources.panic = function (msg) {

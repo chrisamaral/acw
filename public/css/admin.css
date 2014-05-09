@@ -18,42 +18,36 @@ input[type="search"]{
     border-top: none;
     padding: 2em;
 }
-.userTabWrapper{
 
-}
-.userList{
+.stdList{
     min-height: 100px;
     border: 1px solid rgb(220, 220, 220);
 }
-.userList>.others{
+.stdList>.others{
     max-height: 30em;
     overflow-y: auto;
 }
-.userList>.selected{
-    z-index: 1;
-    box-shadow: 0 3px 4px rgba(0,0,0,0.2);
+.stdList>.selected{
     border-bottom: 1px solid rgb(220, 220, 220);
 }
-.theOne{
+.stdList>.selected>a{
     font-weight: bold;
     font-size: medium;
-
-
 }
-.userListItem{
+.stdListItem{
     border: none;
     border-top: 1px solid rgb(220, 220, 220);
 }
-.userListItem:first-child{
+.stdListItem:first-child{
     border-top: none;
     padding-top: 1em;
 }
-.userListItem:last-child{
+.stdListItem:last-child{
     padding-bottom: 1em;
 }
 
-.deletedUser{
-    color: lightgrey !important;
+.list-group-item.deleted{
+    color: #BDBDBD !important;
 }
 .userAvatarThumb{
     height: 100%;
@@ -72,4 +66,32 @@ input[type="search"]{
 }
 .ExistingUserForm{
     margin: 1em;
+}
+.iconPreview{
+    position: relative;
+    height: 400px;
+    line-height: 400px;
+    border-radius: 3px;
+    background-color: rgb(240,240,240);
+    margin: 5px 0;
+    text-align: center;
+}
+.helper {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+.iconPreview>img{
+    /*position: absolute;*/
+    vertical-align: middle;
+    max-height: 380px;
+    max-width: 40%;
+    border: dashed 1px rgb(100,100,100);
+}
+.formAlerts>div{
+    margin: 5px 0;
+}
+.iconPreview>.glyphicon{
+    font-size: 3em;
+    margin: 0 10px;
 }

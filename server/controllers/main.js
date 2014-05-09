@@ -39,6 +39,7 @@ customAuth.init(function () {
 
     // adicionar rotas de login
     customAuth.listen();
+
     require('./user.js');
     require('./admin.js');
     if (etc.ENV === 'development') {

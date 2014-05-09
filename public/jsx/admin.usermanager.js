@@ -53,8 +53,8 @@
                 label = user.full_name || user.short_name || 'sem nome ...',
                 classes = React.addons.classSet({
                     'list-group-item': true,
-                    userListItem: true,
-                    deletedUser: (user.active === 0),
+                    stdListItem: true,
+                    deleted: (user.active === 0),
                     theOne: this.props.isSelected
                 });
 
@@ -91,7 +91,7 @@
             render: function () {
                 var theOne = this.props.selectedUser;
                 return (
-                    <div className='userList list-group'>
+                    <div className='stdList list-group'>
                         {theOne ?
                             (<div className='selected'>
                                 <UserItem
@@ -174,7 +174,7 @@
                     })});
 
                 clearTimeout(userInputTimeout);
-                userInputTimeout = setTimeout(function(){
+                userInputTimeout = setTimeout(function () {
                     this.reloadList();
                 }.bind(this), 500);
                 
