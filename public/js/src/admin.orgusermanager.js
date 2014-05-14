@@ -25,14 +25,14 @@
     }
     OrgApp = React.createClass({displayName: 'OrgApp',
         getInitialState: function () {
-            return {enabled: this.props.app.enabled};
+            return {enabled: this.props.enabled};
         },
         componentWillReceiveProps: function(new_props){
-            this.setState({enabled: new_props.app.enabled});
+            this.setState({enabled: new_props.enabled});
         },
         toggleApp: function (e) {
             this.setState({enabled: e.currentTarget.checked});
-            $.ajax('/admin/org_app/' + this.props.app.org_app + '/user/' + this.props.user , {
+            $.ajax('/admin/org_app/' + this.props.org_app + '/user/' + this.props.user , {
                 type: e.currentTarget.checked ? 'POST' : 'DELETE'
             });
         },
@@ -41,38 +41,38 @@
                 React.DOM.label(null, 
                     React.DOM.input( {type:"checkbox",
                         checked:this.state.enabled,
-                        onChange:this.toggleApp} ), " ", this.props.app.name
+                        onChange:this.toggleApp} ),this.props.name
                 )
             )
         }
     });
     OrgApps = React.createClass({displayName: 'OrgApps',
-        calcUri: function(props){
-            props = props || this.props;
-            return  '/admin/org/' + props.org + '/user/' + props.user + '/apps';
-        },
         getInitialState: function(){
-            return {apps: [], uri: this.calcUri()};
+            return {apps: []};
         },
         componentWillReceiveProps: function(new_props){
-            this.setState({uri: this.calcUri(new_props)});
-            this.reloadList();
+            this.reloadList(new_props);
         },
-        componentDidMount: function(){
-            this.reloadList();
+        componentDidMount: function () {
+            this.reloadList(this.props);
         },
-        reloadList: function(){
-            $.get(this.state.uri)
-                .done(function(apps){
-                    this.setState({apps: apps});
+        reloadList: function(props){
+            $.get('/admin/org/' + props.org + '/user/' + props.user + '/apps')
+                .done(function (arrayOfApps) {
+                    this.setState({apps: arrayOfApps});
                 }.bind(this));
         },
 
         render: function () {
             return React.DOM.div(null, 
                 React.DOM.h5(null, "Aplicativos Disponíveis"),
-                this.state.apps.map(function(app){
-                    return OrgApp( {key:app.id, app:app, org:this.props.org, user:this.props.user} );
+                _.map(this.state.apps, function(app){
+                    return OrgApp(
+                                {key:app.id,
+                                enabled:app.enabled,
+                                name:app.name,
+                                org_app:app.org_app,
+                                user:this.props.user} );
                 }.bind(this))
             );
         }
@@ -124,7 +124,7 @@
                     this.props.setSelected(state, true);
                 }.bind(this));
         },
-        toggleUser: function(e){
+        toggleUser: function (e) {
             var uri = '/admin/org/' + this.props.org + '/user/' + this.state.id, new_user = this.state;
             new_user.active = e.currentTarget.checked;
             this.props.setSelected(new_user, true);
@@ -184,7 +184,7 @@
                 ),
                 React.DOM.div( {className:"row"}, 
                     React.DOM.div( {className:"col-md-6"}, 
-                        React.DOM.form( {role:"form", onSubmit:this.props.user.id ? this.setNewEmail : this.lookForEmail}, 
+                        React.DOM.form( {role:"form", onSubmit:this.state.id ? this.setNewEmail : this.lookForEmail}, 
                             React.DOM.div( {className:"form-group"}, 
                                 React.DOM.input( {ref:"newEmail", name:"email",
                                     type:"email", className:"form-control", required:true,
@@ -207,7 +207,8 @@
                                 React.DOM.input( {type:"checkbox", checked:this.state.isAdmin, disabled:this.state.id === null, onChange:this.toggleAdmin} ), " Administrador"
                             )
                         ),
-                        this.props.user.id && this.state.active && OrgApps( {org:this.props.org, user:this.props.user.id} )
+                        this.state.id && this.state.active &&
+                            OrgApps( {org:this.props.org, user:this.state.id} )
                     )
                 )
             );
@@ -218,17 +219,21 @@
             return {
                 selectedOrg: {id: null},
                 selectedUser: new DefaultUser(),
-                forcedUpdate: (new Date()).getTime()
+                forceUpdate: (new Date()).getTime()
             };
         },
-        setSelectedUser: function (item, keepOn) {
-
-            this.setState({
-                selectedUser: !keepOn && item.id === this.state.selectedUser.id
+        setSelectedUser: function (item, forceReload) {
+            var new_state = {
+                selectedUser: !forceReload && item.id === this.state.selectedUser.id
                     ? new DefaultUser()
-                    : item,
-                forcedUpdate: keepOn ? (new Date()).getTime() : this.state.forcedUpdate
-            });
+                    : item
+            };
+
+            if (forceReload) {
+                new_state.forceUpdate = (new Date()).getTime();
+            }
+
+            this.setState(new_state);
         },
         setSelectedOrg: function (item, keepOn) {
             var new_state = {
@@ -254,7 +259,7 @@
                     React.DOM.h5(null, "Usuários"),
                     OrgList( {uri:this.state.selectedOrg.id ? '/admin/org/' + this.state.selectedOrg.id + '/users' : null,
                         selected:this.state.selectedUser,
-                        forcedUpdate:this.state.forcedUpdate,
+                        forceUpdate:this.state.forceUpdate,
                         setSelected:this.setSelectedUser} )
                 ),
                 React.DOM.div( {className:"col-md-6"}, 

@@ -144,11 +144,8 @@
                     <div className='col-md-8'>
                         <AppForm
                             action='/admin/app'
-                            id={this.state.selected.id}
-                            abbr={this.state.selected.abbr}
+                            item={this.state.selected}
                             iname={'aplicativo'}
-                            name={this.state.selected.name}
-                            active={this.state.selected.active}
                             setSelected={this.setSelected} />
                         {this.state.selected.id
                             ? <AppIconForm

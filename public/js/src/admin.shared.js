@@ -67,13 +67,7 @@
     components.StdForm = React.createClass({displayName: 'StdForm',
         mixins: [React.addons.LinkedStateMixin],
         getInitialState: function () {
-            return {
-                id: this.props.id,
-                abbr: this.props.abbr,
-                name: this.props.name,
-                active: this.props.active,
-                alerts: {}
-            };
+            return {abbr: this.props.item.abbr, name: this.props.item.name, active: this.props.item.active, alerts: {}};
         },
         dismissAlert: function (e) {
             e.preventDefault();
@@ -90,28 +84,32 @@
             e.preventDefault();
             $.post(e.currentTarget.action, $(e.currentTarget).serialize())
                 .done(function(id){
-                    this.props.setSelected({
-                        id: id,
+                    var item = _.merge(this.props.item, {
                         abbr: this.state.abbr,
                         name: this.state.name,
                         active: this.state.active
-                    }, true);
+                    });
+
+                    item.id = id;
+                    this.props.setSelected(item, true);
+
                 }.bind(this))
                 .fail(function(xhr){
+
                     var new_alerts = this.state.alerts;
                     new_alerts[uniqueId()] = ['danger', xhr.responseText];
                     this.setState({
                         alerts: new_alerts
                     });
+
                 }.bind(this));
         },
         componentWillReceiveProps: function(props){
-            this.setState(_.merge(this.state, props));
+            this.setState({abbr: props.item.abbr, name: props.item.name, active: props.item.active});
         },
         render: function () {
-            var notNew = this.props.id !== null;
-            return (React.DOM.form( {action:this.props.action + (notNew ? '/' + this.props.id : ''),
-            role:"form", onSubmit:this.handleSubmit}, 
+            var notNew = this.props.item.id !== null;
+            return React.DOM.form( {action:this.props.action + (notNew ? '/' + this.props.item.id : ''), role:"form", onSubmit:this.handleSubmit}, 
                 React.DOM.div( {className:"row"}, 
                     React.DOM.div( {className:"col-md-4 form-group"}, 
                         React.DOM.label( {htmlFor:"itemAbbr"}, "Nome"),
@@ -127,9 +125,10 @@
                     React.DOM.div( {className:"col-md-4"}, 
                         React.DOM.div( {className:"checkbox"}, 
                             React.DOM.label(null, 
-                                React.DOM.input( {name:"active", type:"checkbox", onChange:this.onCheck,
-                                checked:this.state.active,
-                                value:"on"} ), " ", 'Ativar ' + this.props.iname
+                                React.DOM.input( {name:"active", type:"checkbox",
+                                    onChange:this.onCheck,
+                                    checked:this.state.active,
+                                    value:"on"} ),'Ativar ' + this.props.iname
                             )
                         )
                     ),
@@ -137,7 +136,7 @@
                         React.DOM.button( {className:"btn btn-default", type:"submit"}, "Salvar")
                     )
                 )
-            ));
+            );
         }
     });
 
@@ -159,8 +158,8 @@
             );
         }
     });
-
     StdListItem = components.StdListItem;
+
     components.StdList = React.createClass({displayName: 'StdList',
         getInitialState: function(){
             return {items: []};
@@ -183,7 +182,14 @@
         componentDidMount: function(){
             this.reloadList();
         },
-        componentWillReceiveProps: function(new_props){
+        componentWillReceiveProps: function (new_props) {
+
+            this.setState({
+                items: this.state.items.map(function (item) {
+                    return item.id === new_props.selected.id ? new_props.selected : item;
+                })
+            });
+
             if (new_props.uri !== this.props.uri || this.props.forcedUpdate !== new_props.forcedUpdate) {
                 this.reloadList(new_props.uri);
             }

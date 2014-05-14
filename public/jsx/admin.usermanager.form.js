@@ -152,7 +152,7 @@
             }
 
             LazyLoad.css(['/js/ext/bootstrap-datepicker/datepicker.css']);
-            LazyLoad.js(['/js/ext/bootstrap-datepicker/js/bootstrap-datepicker.js'], setDatePickers);
+            LazyLoad.js(['/js/ext/bootstrap-datepicker/js/bootstrap-datepicker.min.js'], setDatePickers);
             
         },
         render: function () {

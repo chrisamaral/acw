@@ -120,11 +120,9 @@
                     <div className='col-md-8'>
                         <OrgForm
                             id={this.state.selected.id}
+                            item={this.state.selected}
                             action='/admin/org'
                             iname={'organização'}
-                            abbr={this.state.selected.abbr}
-                            name={this.state.selected.name}
-                            active={this.state.selected.active}
                             setSelected={this.setSelected} />
                         { this.state.selected.id && this.state.selected.active
                             && <OrgApps org={this.state.selected.id} /> }

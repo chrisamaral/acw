@@ -6,10 +6,23 @@
 
     TabContent = React.createClass({displayName: 'TabContent',
         render: function () {
-            var tab = this.props.tab, TabComponent = components[tab.id],
-                classes = React.addons.classSet({"tab-pane": true, active: this.props.active});
-            return (React.DOM.div( {id:tab.id, className:classes}, TabComponent( {tab:tab} )));
-        } 
+            var tab = this.props.tab,
+                TabComponent,
+                classes = React.addons.classSet(
+                    {"tab-pane": true, active: this.props.active}
+                );
+
+            if (this.props.tab.active && !this.props.tab.onLoadGet) {
+
+                TabComponent = components[tab.id];
+                return React.DOM.div( {id:tab.id, className:classes}, 
+                    TabComponent( {tab:tab} )
+                );
+
+            } else {
+                return React.DOM.div( {id:tab.id, className:classes}, "...");
+            }
+        }
     });
 
     Tab = React.createClass({displayName: 'Tab',
@@ -17,38 +30,76 @@
             var tab = this.props.tab,
                 classes = React.addons.classSet({active: this.props.active});
 
-            return (React.DOM.li( {className:classes}, React.DOM.a( {href:'#' + tab.id, 'data-toggle':"tab"}, tab.title)));
+            return React.DOM.li( {className:classes}, 
+                React.DOM.a( {href:'#' + tab.id, 'data-toggle':"tab", 'data-id':tab.id}, tab.title)
+            );
         } 
     });
 
     AdminTabs = React.createClass({displayName: 'AdminTabs',
         getInitialState: function () {
-            return {tabs: [], user: null};
+            return {tabs: {}, user: null, bound: false};
         },
         componentDidMount: function () {
             $.get(this.props.source)
                 .done(function (response) {
                     acw.user = response.user;
-                    var jsFiles = ['/js/' + window.jsPath + '/admin.shared.js'];
+                    var jsFiles = ['/js/' + window.jsPath + '/admin.shared.js'], tabs = {}, activeTab;
 
-                    jsFiles = jsFiles.concat(
-                        response.tabs.map(function(tab){
-                            return '/js/' + window.jsPath + '/admin.' + tab.id.toLowerCase() + '.js';
-                        })
-                    );
+                    response.tabs.forEach(function (tab, index) {
+                        tab.active = index === 0;
+                        tab.onLoadGet = function() {
+                            var self = this.component, tabs = self.state.tabs, tab = tabs[this.tab];
+
+                            LazyLoad.js('/js/' + window.jsPath + '/admin.' + tab.id.toLowerCase() + '.js', function () {
+                                tab.onLoadGet = null;
+                                self.setState({tabs: tabs});
+                            });
+
+                        }.bind({component: this, tab: tab.id});
+                        tabs[tab.id] = tab;
+                        if (tab.active) {
+                            activeTab = tab;
+                        }
+                    }.bind(this));
+
 
                     LazyLoad.js(jsFiles, function(){
-                        this.setState({tabs: response.tabs, user: response.user});
+                        this.setState({tabs: tabs, user: response.user});
+                        activeTab.onLoadGet();
                     }.bind(this));
                 }.bind(this));
+        },
+        handleTabChange: function (e) {
+
+            var id = $(e.target).data('id'),
+                tabs = {};
+
+            _.forEach(this.state.tabs, function (tab) {
+                tab.active = tab.id === id;
+                tabs[tab.id] = tab;
+            });
+
+            if (tabs[id].onLoadGet) {
+                tabs[id].onLoadGet();
+            } else {
+                this.setState({tabs: tabs});
+            }
+        },
+        componentDidUpdate: function(){
+            var elem = this.getDOMNode();
+
+            if (!this.state.bound) {
+                $(elem).find('a[data-toggle="tab"]').on('shown.bs.tab', this.handleTabChange);
+                this.setState({bound: true});
+            }
         },
         render: function () {
             var tabs = [], divs = [];
 
-            this.state.tabs.forEach(function (tab) {
-                var active = tabs.length === 0;
-                tabs.push(Tab( {key:tab.id, tab:tab, active:active} ));
-                divs.push(TabContent( {key:tab.id, tab:tab, active:active} ));
+            _.forEach(this.state.tabs, function (tab) {
+                tabs.push(Tab( {key:tab.id, tab:tab, active:tab.active} ));
+                divs.push(TabContent( {key:tab.id, tab:tab, active:tab.active} ));
             });
 
             return (
