@@ -3,7 +3,7 @@ var pageDeps = require('../config/pages.js') || {},
     etc = require('../base.js')();
 
 Date.prototype.toYMD = function () {
-    return etc.strftime('%Y-%m-%d %H:%M:S', this);
+    return etc.strftime('%Y-%m-%d %H:%M:%S', this);
 };
 
 function setLocals(req, res, page, view, title) {

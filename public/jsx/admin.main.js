@@ -29,9 +29,15 @@
             $.get(this.props.source)
                 .done(function (response) {
                     acw.user = response.user;
-                    LazyLoad.js(response.tabs.map(function(tab){
-                        return '/js/' + window.jsPath + '/admin.' + tab.id.toLowerCase() + '.js';
-                    }), function(){
+                    var jsFiles = ['/js/' + window.jsPath + '/admin.shared.js'];
+
+                    jsFiles = jsFiles.concat(
+                        response.tabs.map(function(tab){
+                            return '/js/' + window.jsPath + '/admin.' + tab.id.toLowerCase() + '.js';
+                        })
+                    );
+
+                    LazyLoad.js(jsFiles, function(){
                         this.setState({tabs: response.tabs, user: response.user});
                     }.bind(this));
                 }.bind(this));

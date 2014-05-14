@@ -33,7 +33,9 @@ function defineActions (done) {
                 return done(err);
             }
             rows.forEach(function (action) {
-                etc.authorized.action(action.descr, action.roles.split(':'));
+                action.roles = action.roles.split(':');
+                //console.log(action.descr, 'is avaible to', action.roles);
+                etc.authorized.action(action.descr, action.roles);
             });
             definePageAccess(done);
         });
@@ -59,15 +61,14 @@ function definePageAccess(done){
 function orgGetter () {
     etc.authorized.entity('org', function (req, done) {
 
-        var org = req.org || req.params.org || null;
+        var org = req.org || req.params.org || null, q;
+
         if (!org) {
             return done(null, true);
         }
 
-        etc.db.query('select org.id, org.name' +
-                ' from org' +
-                ' where org.id = ?',
-            [org.id],
+        q = etc.db.query('select org.id, org.name from org where org.id = ? ',
+            [org],
             function (err, rows) {
                 done(err, rows[0]);
             }
@@ -96,7 +97,9 @@ function defineRole(role){
                     if (err) {
                         return done(err);
                     }
-                    done(null, rows[0] && rows[0].c > 0);
+                    var userIs = rows[0] && rows[0].c > 0;
+                    //console.log('you', userIs ? 'are' : 'aint',role);
+                    done(null, userIs);
                 }
             );
 
@@ -117,7 +120,9 @@ function defineRole(role){
                     if (err) {
                         return done(err);
                     }
-                    done(null, rows[0] && rows[0].c > 0);
+                    var userIs = rows[0] && rows[0].c > 0;
+                    //console.log('you', userIs ? 'are' : 'aint',role);
+                    done(null, userIs);
                 }
             );
         });

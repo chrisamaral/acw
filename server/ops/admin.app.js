@@ -25,7 +25,7 @@ exports.getApps = function (req, res) {
 };
 exports.saveApp = function(req, res){
     var app = {abbr: req.body.abbr, name: req.body.name},
-        appId = req.params.id,
+        appId = req.params.app,
         enabled = req.body.active !== undefined;
 
     appId = appId && appId.length ? appId : null;
@@ -81,7 +81,7 @@ exports.saveApp = function(req, res){
     );
 };
 exports.saveIcon = function (req, res) {
-    var form = new multiparty.Form(), props = {app: req.params.id};
+    var form = new multiparty.Form(), props = {app: req.params.app};
 
     function makeDir (callback) {
         mkdirp(this.path, function (err) {
@@ -132,4 +132,48 @@ exports.saveIcon = function (req, res) {
     });
 
 
+};
+exports.getOrgUserApps = function (req, res) {
+    etc.db.query('SELECT app.id, app.abbr, app.name, app_user.id app_user, org_app.id org_app ' +
+        'FROM app ' +
+        'JOIN org_app ON ( org_app.org = ? AND org_app.app = app.id ) ' +
+        'LEFT JOIN app_user ON ( app_user.org_app = org_app.id AND app_user.user = ? ) ' +
+        'ORDER BY app.name ',
+        [req.params.org, req.params.user],
+        function(err, rows){
+            if(err){
+                console.log(err);
+                return res.send(500);
+            }
+            res.json(rows.map(function (app) {
+                app.enabled = app.app_user !== null;
+                delete app.app_user;
+                return app;
+            }));
+        }
+    );
+};
+exports.newUserApp = function (req, res) {
+    etc.db.query('INSERT INTO app_user (user, org_app, init) VALUES (?, ?, ?) ',
+        [req.params.user, req.params.org_app, (new Date()).toYMD()],
+        function(err, info){
+            if(err){
+                console.log(err);
+                return res.send(500);
+            }
+            res.send(204);
+        }
+    );
+};
+exports.removeUserApp = function(req, res) {
+    etc.db.query('DELETE FROM app_user WHERE org_app = ? AND user = ? ',
+        [req.params.org_app, req.params.user],
+        function(err, info){
+            if(err){
+                console.log(err);
+                return res.send(500);
+            }
+            res.send(204);
+        }
+    );
 };

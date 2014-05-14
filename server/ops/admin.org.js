@@ -3,7 +3,7 @@ var etc = require('../base.js')(),
     async = require('async');
 
 exports.getOrgs = function (req, res) {
-    etc.db.query('SELECT org.id, org.abbr, org.name, org.icon, active_org.init ' +
+    etc.db.query('SELECT org.id, org.abbr, org.name, active_org.init ' +
         'FROM org ' +
         'LEFT JOIN active_org ON org.id = active_org.org ' +
         'ORDER BY org.name',
@@ -20,7 +20,7 @@ exports.getOrgs = function (req, res) {
 };
 exports.saveOrg = function(req, res){
     var org = {abbr: req.body.abbr, name: req.body.name},
-        orgId = req.params.id,
+        orgId = req.params.org,
         enabled = req.body.active !== undefined;
 
     orgId = orgId && orgId.length ? orgId : null;
@@ -74,4 +74,59 @@ exports.saveOrg = function(req, res){
             res.send(orgId);
         }
     );
+};
+
+exports.getOrgApps = function (req, res) {
+    etc.db.query('SELECT app.id, app.abbr, app.name, org_app.id enabled '+
+        'FROM app ' +
+        'JOIN active_app ON active_app.app = app.id ' +
+        'LEFT JOIN org_app ON ( org_app.org = ? AND org_app.app = app.id ) ' +
+        'ORDER BY app.abbr ',
+        [req.params.org],
+        function (err, rows) {
+            if (err) {
+                return res.send(500);
+            }
+            res.json(rows.map(function (app) {
+                app.enabled = app.enabled !== null;
+                return app;
+            }));
+        }
+    );
+};
+exports.enableOrgApp = function (req, res) {
+    etc.db.query('INSERT INTO org_app (org, app, init) '+
+        'VALUES (?, ?, ?)',
+        [req.params.org, req.params.app, (new Date()).toYMD()],
+        function (err, info) {
+            res.send(204);
+        });
+};
+exports.disableOrgApp = function (req, res) {
+    etc.db.query('DELETE FROM org_app WHERE org = ? AND app = ? ',
+        [req.params.org, req.params.app],
+        function (err, info) {
+            res.send(204);
+        });
+};
+exports.getUserOrgs = function(req, res){
+    var q = etc.db.query('SELECT org.id, org.abbr, org.name ' +
+        'FROM org ' +
+        'JOIN active_org ON org.id = active_org.org ' +
+        "JOIN role_user ON ( " +
+            " ( role_user.role = 'admin' OR ( role_user.org = org.id AND role_user.role = 'org.admin' ) )" +
+        " AND role_user.user = ? ) " +
+        'GROUP BY org.id ' +
+        'ORDER BY org.name',
+        [req.user.id],
+        function (err, rows) {
+            if (err) {
+                console.log(q.sql, err);
+                return res.send(500);
+            }
+            res.json(rows.map(function(row){
+                row.active = true;
+                return row;
+            }));
+        });
 };

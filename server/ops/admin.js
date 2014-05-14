@@ -7,10 +7,10 @@ ops = _.merge({}, require('./admin.user.js'), require('./admin.app.js'), require
 
 ops.getTabs = function (req, res) {
     var tabs = {
-        UserManager: ['Geral', ['user.create', 'user.on', 'user.off', 'user.admin.on', 'user.admin.off']],
+        UserManager: ['Usuários', ['user.create', 'user.on', 'user.off', 'user.admin.on', 'user.admin.off']],
         AppManager: ['Aplicativos', ['app.create', 'app.on', 'app.off']],
-        OrgManager: ['Organizações', ['org.create', 'org.on', 'org.off', 'org.app.on', 'org.app.off', 'org.user.admin.off', 'org.user.admin.on']],
-        OrgUserManager: ['Organização', ['user.create', 'user.on', 'org.user.on', 'org.user.off', 'org.app.user.on', 'org.app.user.off']]
+        OrgManager: ['Organizações', ['org.create', 'org.on', 'org.off', 'org.app.on', 'org.app.off']],
+        OrgUserManager: ['Organização', ['user.create', 'user.on', 'org.user.on', 'org.user.off', 'org.app.user.on', 'org.app.user.off', 'org.user.admin.off', 'org.user.admin.on']]
     }, avaibleTabs = [];
 
     tabs = _.map(tabs, function (tab, id) {

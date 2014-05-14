@@ -31,31 +31,10 @@
         React = window.React,
         SelectedUser,
         ExistingUserForm,
-        ContactList,
-        ContactItem,
-        UserAvatar;
+        ContactList = components.ContactList,
+        ContactItem = components.ContactItem,
+        UserAvatar = components.UserAvatar;
 
-    UserAvatar = React.createClass({displayName: 'UserAvatar',
-        render: function () {
-            return (React.DOM.img( {className:"userAvatarThumb", src:this.props.src ? this.props.src : '/img/user-large.png'} ));
-        }
-    });
-    ContactItem = React.createClass({displayName: 'ContactItem',
-        render: function(){
-            return (React.DOM.li( {className:"list-group-item"}, React.DOM.span(null, this.props.item)))
-        }
-    });
-    ContactList = React.createClass({displayName: 'ContactList',
-        render: function () {
-            return (React.DOM.ul( {className:"list-group ContactList"}, 
-                
-                    this.props.list.map(function(item){
-                        return (ContactItem( {item:item, key:item} ));
-                    }.bind(this))
-                        
-            ));
-        }
-    });
     ExistingUserForm = React.createClass({displayName: 'ExistingUserForm',
         setNewEmail: function (e) {
             e.preventDefault();
@@ -64,23 +43,23 @@
             input.value = '';
         },
         render: function () {
-            return (React.DOM.div( {className:"ExistingUserForm"}, 
-                        React.DOM.div( {className:"row"}, 
-                            React.DOM.div( {className:"col-md-5"}, 
-                                React.DOM.form( {role:"form", onSubmit:this.setNewEmail}, 
-                                    React.DOM.div( {className:"form-group"}, 
-                                        React.DOM.input( {ref:"newEmail", name:"email",
-                                            type:"email", className:"form-control", required:true, placeholder:"Novo email"} )
-                                    )
-                                ),
-                                ContactList( {list:this.props.emails} ),
-                                ContactList( {list:this.props.tels} )
-                            ),
-                            React.DOM.div( {className:"col-md-7"}, 
-                                "lista de empresas"
+            return React.DOM.div( {className:"ExistingUserForm"}, 
+                React.DOM.div( {className:"row"}, 
+                    React.DOM.div( {className:"col-md-5"}, 
+                        React.DOM.form( {role:"form", onSubmit:this.setNewEmail}, 
+                            React.DOM.div( {className:"form-group"}, 
+                                React.DOM.input( {ref:"newEmail", name:"email",
+                                    type:"email", className:"form-control", required:true, placeholder:"Novo email"} )
                             )
-                        )
-                ));
+                        ),
+                        ContactList( {list:this.props.emails} ),
+                        ContactList( {list:this.props.tels} )
+                    ),
+                    React.DOM.div( {className:"col-md-7"}, 
+                        "lista de empresas"
+                    )
+                )
+            );
         }
         
     });
@@ -96,6 +75,9 @@
                     b.disabled = false;
                 });
             e.preventDefault();
+        },
+        setAdmin: function(e){
+            this.setState({isAdmin: e.currentTarget.checked});
         },
         newUserEmail: function (newEmail) {
             this.setState({emails: this.state.emails.concat([newEmail])});
@@ -130,7 +112,8 @@
                 init: null,
                 expiration: null,
                 disabled: true,
-                wasDisabled: true
+                wasDisabled: true,
+                isAdmin: false
             };
         },
         componentWillReceiveProps: function(new_props){
@@ -225,7 +208,7 @@
                             React.DOM.div( {className:"row"}, 
                                 React.DOM.div( {className:"col-md-4"}, 
                                     React.DOM.div( {className:"form-group"}, 
-                                        React.DOM.label( {htmlFor:"userShortName"}, "Primeiro nome/apelido"),
+                                        React.DOM.label( {htmlFor:"userShortName"}, "Nome"),
                                         React.DOM.input( {id:"userShortName",
                                             name:"short_name", 
                                             className:"form-control",
@@ -247,7 +230,22 @@
                                 )
                             ),
                             userSwitch,
-                            React.DOM.button( {ref:"submitUserChanges", type:"submit", className:"btn btn-default"}, "Salvar")
+                            React.DOM.div( {className:"row"}, 
+                                React.DOM.div( {className:"col-md-8"}, 
+                                    React.DOM.div( {className:"checkbox"}, 
+                                        React.DOM.label(null, 
+                                            React.DOM.input( {type:"checkbox",
+                                                disabled:this.state.disabled,
+                                                name:"isAdmin", value:"on",
+                                                onChange:this.setAdmin,
+                                                checked:!this.state.disabled && this.state.isAdmin} ),"Administrador"
+                                        )
+                                    )
+                                ),
+                                React.DOM.div( {className:"col-md-4"}, 
+                                    React.DOM.button( {ref:"submitUserChanges", type:"submit", className:"btn btn-default"}, "Salvar")
+                                )
+                            )
                         )
                     )
                 ),

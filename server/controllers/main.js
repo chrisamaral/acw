@@ -46,6 +46,11 @@ customAuth.init(function () {
         require('../hacks/admin.js');
     }
     etc.express.use(function (req, res, next) {
+
+        if(req.xhr){
+            return res.send(404);
+        }
+
         res.status(404);
         res.render('errors/404');
     });
@@ -53,11 +58,17 @@ customAuth.init(function () {
     etc.express.use(function (err, req, res, next) {
 
         if (err && err instanceof etc.authorized.UnauthorizedError === false) {
+            console.log(err);
             return res.status(500).render('errors/500');
         }
 
+        console.log(err);
+
         if (!req.isAuthenticated()) {
             req.session.redirect_to = req.originalUrl;
+            if (req.xhr) {
+                return res.send(401);
+            }
             return res.status(401).redirect('/login');
         }
 

@@ -54,7 +54,7 @@
                 classes = React.addons.classSet({
                     'list-group-item': true,
                     stdListItem: true,
-                    deleted: (user.active === 0),
+                    deleted: !user.active,
                     theOne: this.props.isSelected
                 });
 

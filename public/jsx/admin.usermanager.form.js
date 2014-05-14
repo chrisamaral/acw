@@ -31,31 +31,10 @@
         React = window.React,
         SelectedUser,
         ExistingUserForm,
-        ContactList,
-        ContactItem,
-        UserAvatar;
+        ContactList = components.ContactList,
+        ContactItem = components.ContactItem,
+        UserAvatar = components.UserAvatar;
 
-    UserAvatar = React.createClass({
-        render: function () {
-            return (<img className='userAvatarThumb' src={this.props.src ? this.props.src : '/img/user-large.png'} />);
-        }
-    });
-    ContactItem = React.createClass({
-        render: function(){
-            return (<li className='list-group-item'><span>{this.props.item}</span></li>)
-        }
-    });
-    ContactList = React.createClass({
-        render: function () {
-            return (<ul className='list-group ContactList'>
-                {
-                    this.props.list.map(function(item){
-                        return (<ContactItem item={item} key={item} />);
-                    }.bind(this))
-                }        
-            </ul>);
-        }
-    });
     ExistingUserForm = React.createClass({
         setNewEmail: function (e) {
             e.preventDefault();
@@ -64,23 +43,23 @@
             input.value = '';
         },
         render: function () {
-            return (<div className='ExistingUserForm'>
-                        <div className='row'>
-                            <div className='col-md-5'>
-                                <form role='form' onSubmit={this.setNewEmail}>
-                                    <div className='form-group'>
-                                        <input ref='newEmail' name='email'
-                                            type='email' className='form-control' required={true} placeholder='Novo email' />
-                                    </div>
-                                </form>
-                                <ContactList list={this.props.emails} />
-                                <ContactList list={this.props.tels} />
+            return <div className='ExistingUserForm'>
+                <div className='row'>
+                    <div className='col-md-5'>
+                        <form role='form' onSubmit={this.setNewEmail}>
+                            <div className='form-group'>
+                                <input ref='newEmail' name='email'
+                                    type='email' className='form-control' required={true} placeholder='Novo email' />
                             </div>
-                            <div className='col-md-7'>
-                                lista de empresas
-                            </div>
-                        </div>
-                </div>);
+                        </form>
+                        <ContactList list={this.props.emails} />
+                        <ContactList list={this.props.tels} />
+                    </div>
+                    <div className='col-md-7'>
+                        lista de empresas
+                    </div>
+                </div>
+            </div>;
         }
         
     });
@@ -96,6 +75,9 @@
                     b.disabled = false;
                 });
             e.preventDefault();
+        },
+        setAdmin: function(e){
+            this.setState({isAdmin: e.currentTarget.checked});
         },
         newUserEmail: function (newEmail) {
             this.setState({emails: this.state.emails.concat([newEmail])});
@@ -130,7 +112,8 @@
                 init: null,
                 expiration: null,
                 disabled: true,
-                wasDisabled: true
+                wasDisabled: true,
+                isAdmin: false
             };
         },
         componentWillReceiveProps: function(new_props){
@@ -225,7 +208,7 @@
                             <div className='row'>
                                 <div className='col-md-4'>
                                     <div className='form-group'>
-                                        <label htmlFor='userShortName'>Primeiro nome/apelido</label>
+                                        <label htmlFor='userShortName'>Nome</label>
                                         <input id='userShortName'
                                             name='short_name' 
                                             className='form-control'
@@ -247,7 +230,22 @@
                                 </div>
                             </div>
                             {userSwitch}
-                            <button ref='submitUserChanges' type='submit' className="btn btn-default">Salvar</button>
+                            <div className='row'>
+                                <div className='col-md-8'>
+                                    <div className='checkbox'>
+                                        <label>
+                                            <input type='checkbox'
+                                                disabled={this.state.disabled}
+                                                name='isAdmin' value='on'
+                                                onChange={this.setAdmin}
+                                                checked={!this.state.disabled && this.state.isAdmin} />Administrador
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className='col-md-4'>
+                                    <button ref='submitUserChanges' type='submit' className="btn btn-default">Salvar</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </form>
