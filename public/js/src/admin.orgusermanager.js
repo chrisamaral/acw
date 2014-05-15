@@ -148,7 +148,7 @@
                     React.DOM.div( {className:"row"}, 
                         React.DOM.div( {className:"col-md-3 userAvatarThumbContainer"}, 
                             React.DOM.span(null),
-                            UserAvatar( {src:this.props.avatar} )
+                            UserAvatar( {src:this.state.avatar} )
                         ),
                         React.DOM.div( {className:"col-md-9"}, 
                             React.DOM.div( {className:"row"}, 

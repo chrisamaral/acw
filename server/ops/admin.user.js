@@ -394,7 +394,7 @@ exports.getOrgUsers = function(req, res) {
             }
             res.json(rows.map(function(user){
                 if (user.avatar) {
-                    user.avatar = '/media/u/' + id + '/1/' + user.avatar;
+                    user.avatar = '/media/u/' + user.id + '/1/' + user.avatar;
                 }
 
                 user.isAdmin = user.roles.indexOf('org.admin') >= 0;
@@ -446,7 +446,7 @@ exports.findUserByEmail = function (req, res) {
             var user = rows[0];
 
             if (user.avatar) {
-                user.avatar = '/media/u/' + id + '/1/' + user.avatar;
+                user.avatar = '/media/u/' + user.id + '/1/' + user.avatar;
             }
 
             user.isAdmin = user.roles && user.roles.indexOf('org.admin') >= 0;
