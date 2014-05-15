@@ -190,7 +190,7 @@
                 })
             });
 
-            if (new_props.uri !== this.props.uri || this.props.forcedUpdate !== new_props.forcedUpdate) {
+            if (new_props.uri !== this.props.uri || this.props.forceUpdate !== new_props.forceUpdate) {
                 this.reloadList(new_props.uri);
             }
         },

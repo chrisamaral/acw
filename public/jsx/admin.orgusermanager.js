@@ -199,7 +199,8 @@
                     <div className='col-md-6'>
                         <div className='checkbox'>
                             <label>
-                                <input type='checkbox' checked={this.state.active || this.state.isAdmin} disabled={this.state.id === null || this.state.isAdmin} onChange={this.toggleUser} /> Funcionário ativo
+                                <input type='checkbox' checked={this.state.active || this.state.isAdmin} disabled={this.state.id === null || this.state.isAdmin} onChange={this.toggleUser} />
+                                    Funcionário ativo
                             </label>
                         </div>
                         <div className='checkbox'>

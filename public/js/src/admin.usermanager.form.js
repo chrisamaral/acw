@@ -33,8 +33,38 @@
         ExistingUserForm,
         ContactList = components.ContactList,
         ContactItem = components.ContactItem,
-        UserAvatar = components.UserAvatar;
+        UserAvatar = components.UserAvatar,
+        UserOrgsInfo;
 
+    UserOrgsInfo = React.createClass({displayName: 'UserOrgsInfo',
+        getInitialState: function () {
+            return {orgs: []};
+        },
+        componentDidMount: function () {
+            this.reloadOrgs(this.props.user);
+        },
+        componentWillReceiveProps: function (new_props) {
+            this.reloadOrgs(new_props.user);
+        },
+        reloadOrgs: function(user){
+            $.get('/admin/user/' + user + '/orgs')
+                .done(function(orgs){
+                    this.setState({orgs: orgs});
+                }.bind(this));
+        },
+        render: function () {
+            return React.DOM.ul(null, 
+                this.state.orgs.map(function(org){
+                    return React.DOM.li( {key:org.id}, 
+                        React.DOM.h4(null, org.org + '    –   ',React.DOM.small(null, org.roles)),
+                        React.DOM.ul(null, org.apps.map(function (app) {
+                            return React.DOM.li( {key:app}, app);
+                        }))
+                    );
+                })
+            );
+        }
+    });
     ExistingUserForm = React.createClass({displayName: 'ExistingUserForm',
         setNewEmail: function (e) {
             e.preventDefault();
@@ -56,7 +86,7 @@
                         ContactList( {list:this.props.tels} )
                     ),
                     React.DOM.div( {className:"col-md-7"}, 
-                        "lista de empresas"
+                        UserOrgsInfo( {user:this.props.user} )
                     )
                 )
             );
@@ -251,8 +281,9 @@
                 ),
                 
                 this.props.user
-                    ? (ExistingUserForm( 
-                            {newUserEmail:this.newUserEmail,
+                    ? (ExistingUserForm(
+                            {user:this.props.user,
+                            newUserEmail:this.newUserEmail,
                             emails:this.state.emails,
                             tels:this.state.tels} ))
                     : ''

@@ -199,7 +199,8 @@
                     React.DOM.div( {className:"col-md-6"}, 
                         React.DOM.div( {className:"checkbox"}, 
                             React.DOM.label(null, 
-                                React.DOM.input( {type:"checkbox", checked:this.state.active || this.state.isAdmin, disabled:this.state.id === null || this.state.isAdmin, onChange:this.toggleUser} ), " Funcionário ativo"
+                                React.DOM.input( {type:"checkbox", checked:this.state.active || this.state.isAdmin, disabled:this.state.id === null || this.state.isAdmin, onChange:this.toggleUser} ),
+                                    "Funcionário ativo"
                             )
                         ),
                         React.DOM.div( {className:"checkbox"}, 

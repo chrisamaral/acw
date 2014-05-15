@@ -11,6 +11,7 @@ etc.express.get('/admin/user/:user', etc.authorized.can('get user info'), ops.ge
 etc.express.post('/admin/user', etc.authorized.can('create user'), ops.newUser);
 etc.express.post('/admin/user/:user', etc.authorized.can('create user', 'enable user', 'disable user'), ops.saveUser);
 etc.express.post('/admin/user/:user/email', etc.authorized.can('create user'), ops.newEmail);
+etc.express.get('/admin/user/:user/orgs', etc.authorized.can('list users'), ops.getUserOrgInfo);
 
 etc.express.get('/admin/apps', etc.authorized.can('list apps'), ops.getApps);
 etc.express.post('/admin/app', etc.authorized.can('create app'), ops.saveApp);
@@ -40,3 +41,4 @@ etc.express.get('/admin/org/:org/user/:user/apps', etc.authorized.can('enable ac
 
 etc.express.post('/admin/org_app/:org_app/user/:user', etc.authorized.can('enable access to app instance'), ops.newUserApp);
 etc.express.delete('/admin/org_app/:org_app/user/:user', etc.authorized.can('disable access to app instance'), ops.removeUserApp);
+

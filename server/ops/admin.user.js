@@ -147,8 +147,8 @@ exports.getUser = function (req, res) {
     var id = req.params.user;
     etc.db.query('SELECT ' +
             '   user.full_name, user.short_name, user.avatar,' +
-            '   group_concat(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails,' +
-            '   group_concat(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels,' +
+            '   GROUP_CONCAT(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails,' +
+            '   GROUP_CONCAT(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels,' +
             '   active_user.init, active_user.expiration, ' +
             '   role_user.id is_admin ' +
             ' FROM user' +
@@ -366,21 +366,26 @@ exports.newEmail = function (req, res) {
         });
 };
 exports.getOrgUsers = function(req, res) {
-    etc.db.query('SELECT ' +
-            'user.id, ' +
-            'user.short_name, ' +
-            'user.full_name, ' +
-            'user.avatar, ' +
-            'group_concat(DISTINCT role_user.role SEPARATOR ",") roles, ' +
-            'group_concat(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels, ' +
-            'group_concat(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails ' +
-        'FROM user ' +
-        'JOIN role_user ON ( role_user.user = user.id AND role_user.org = ? ) ' +
-        'LEFT JOIN user_email ON user_email.user = user.id ' +
-        'LEFT JOIN user_tel ON user_tel.user = user.id ' +
-        'WHERE user.creation > (select creation from user where id = ? ) ' +
-        'GROUP BY user.id ' +
-        'ORDER BY user.full_name',
+    etc.db.query(
+        'SELECT * ' +
+        'FROM (' +
+            'SELECT ' +
+                'user.id, ' +
+                'user.short_name, ' +
+                'user.full_name, ' +
+                'user.avatar, ' +
+                'user.creation, ' +
+                'GROUP_CONCAT(DISTINCT role_user.role SEPARATOR ",") roles, ' +
+                'GROUP_CONCAT(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels, ' +
+                'GROUP_CONCAT(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails ' +
+            'FROM user ' +
+            'JOIN role_user ON ( role_user.user = user.id AND role_user.org = ? ) ' +
+            'LEFT JOIN user_email ON user_email.user = user.id ' +
+            'LEFT JOIN user_tel ON user_tel.user = user.id ' +
+            'GROUP BY user.id ' +
+            'ORDER BY user.full_name ' +
+        ') x ' +
+        'WHERE roles IS NULL OR roles NOT LIKE "%org.admin%" OR creation > (select creation from user where id = ? ) ',
         [req.params.org, req.user.id],
         function (err, rows) {
             if (err) {
@@ -404,24 +409,30 @@ exports.getOrgUsers = function(req, res) {
     );
 };
 exports.findUserByEmail = function (req, res) {
-    etc.db.query('SELECT ' +
-            'user.id, ' +
-            'user.short_name, ' +
-            'user.full_name, ' +
-            'user.avatar, ' +
-            'role_user.init is_org_user,' +
-            'group_concat(DISTINCT role_user.role SEPARATOR ",") roles, ' +
-            'group_concat(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels, ' +
-            'group_concat(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails ' +
-            'FROM user ' +
-            'LEFT JOIN role_user ON ( role_user.user = user.id AND role_user.org = ? ) ' +
-            'LEFT JOIN user_email ON user_email.user = user.id ' +
-            'LEFT JOIN user_tel ON user_tel.user = user.id ' +
-            'WHERE user.creation > (select creation from user where id = ? ) ' +
-            'AND (SELECT count(*) FROM user_email WHERE user_email.user = user.id AND user_email.email = ? ) > 0 ' +
-            'GROUP BY user.id ' +
-            'ORDER BY user.full_name',
-        [req.params.org, req.user.id, req.query.email],
+    etc.db.query(
+            'SELECT * ' +
+            'FROM ( ' +
+                'SELECT ' +
+                    'user.id, ' +
+                    'user.short_name, ' +
+                    'user.full_name, ' +
+                    'user.avatar, ' +
+                    'user.creation, ' +
+                    'role_user.init is_org_user,' +
+                    'GROUP_CONCAT(DISTINCT role_user.role SEPARATOR ",") roles, ' +
+                    'GROUP_CONCAT(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels, ' +
+                    'GROUP_CONCAT(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails ' +
+                'FROM user ' +
+                'LEFT JOIN role_user ON ( role_user.user = user.id AND role_user.org = ? ) ' +
+                'LEFT JOIN user_email ON user_email.user = user.id ' +
+                'LEFT JOIN user_tel ON user_tel.user = user.id ' +
+                'WHERE ' +
+                    ' (SELECT count(*) FROM user_email WHERE user_email.user = user.id AND user_email.email = ? ) > 0 ' +
+                'GROUP BY user.id ' +
+                'ORDER BY user.full_name ' +
+            ') x ' +
+            'WHERE roles IS NULL OR roles NOT LIKE "%org.admin%" OR creation > (select creation from user where id = ? ) ',
+        [req.params.org, req.query.email, req.user.id],
         function (err, rows) {
             if (err) {
                 console.log(err);

@@ -33,8 +33,38 @@
         ExistingUserForm,
         ContactList = components.ContactList,
         ContactItem = components.ContactItem,
-        UserAvatar = components.UserAvatar;
+        UserAvatar = components.UserAvatar,
+        UserOrgsInfo;
 
+    UserOrgsInfo = React.createClass({
+        getInitialState: function () {
+            return {orgs: []};
+        },
+        componentDidMount: function () {
+            this.reloadOrgs(this.props.user);
+        },
+        componentWillReceiveProps: function (new_props) {
+            this.reloadOrgs(new_props.user);
+        },
+        reloadOrgs: function(user){
+            $.get('/admin/user/' + user + '/orgs')
+                .done(function(orgs){
+                    this.setState({orgs: orgs});
+                }.bind(this));
+        },
+        render: function () {
+            return <ul>
+                {this.state.orgs.map(function(org){
+                    return <li key={org.id}>
+                        <h4>{org.org + '    –   '}<small>{org.roles}</small></h4>
+                        <ul>{org.apps.map(function (app) {
+                            return <li key={app}>{app}</li>;
+                        })}</ul>
+                    </li>;
+                })}
+            </ul>;
+        }
+    });
     ExistingUserForm = React.createClass({
         setNewEmail: function (e) {
             e.preventDefault();
@@ -56,7 +86,7 @@
                         <ContactList list={this.props.tels} />
                     </div>
                     <div className='col-md-7'>
-                        lista de empresas
+                        <UserOrgsInfo user={this.props.user} />
                     </div>
                 </div>
             </div>;
@@ -251,7 +281,8 @@
                 </form>
                 
                 {this.props.user
-                    ? (<ExistingUserForm 
+                    ? (<ExistingUserForm
+                            user={this.props.user}
                             newUserEmail={this.newUserEmail}
                             emails={this.state.emails}
                             tels={this.state.tels} />)

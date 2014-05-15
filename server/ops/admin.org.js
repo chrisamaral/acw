@@ -110,22 +110,56 @@ exports.disableOrgApp = function (req, res) {
         });
 };
 exports.getUserOrgs = function(req, res){
-    var q = etc.db.query('SELECT org.id, org.abbr, org.name ' +
+    etc.db.query('SELECT org.id, org.abbr, org.name ' +
         'FROM org ' +
         'JOIN active_org ON org.id = active_org.org ' +
         "JOIN role_user ON ( " +
             " ( role_user.role = 'admin' OR ( role_user.org = org.id AND role_user.role = 'org.admin' ) )" +
-        " AND role_user.user = ? ) " +
+            " AND role_user.user = ? ) " +
         'GROUP BY org.id ' +
         'ORDER BY org.name',
         [req.user.id],
         function (err, rows) {
             if (err) {
-                console.log(q.sql, err);
+                console.log(err);
                 return res.send(500);
             }
             res.json(rows.map(function(row){
                 row.active = true;
+                return row;
+            }));
+        });
+};
+
+exports.getUserOrgInfo = function(req, res){
+    var q = etc.db.query('SELECT ' +
+            'org.id, org.name org, ' +
+            'GROUP_CONCAT(DISTINCT role.descr SEPARATOR ", ") roles, ' +
+            'GROUP_CONCAT(DISTINCT app.name SEPARATOR ", ") apps ' +
+        'FROM org ' +
+        'JOIN active_org ON org.id = active_org.org ' +
+            'LEFT JOIN org_app ON org_app.org = org.id ' +
+            'LEFT JOIN app ON app.id = org_app.app ' +
+            'LEFT JOIN app_user ON (app_user.user = ? AND app_user.org_app = org_app.id ) ' +
+        "JOIN role_user ON ( " +
+            " role_user.org = org.id " +
+            " AND role_user.role IN ('org.admin', 'org.user') " +
+            " AND role_user.user = ? " +
+        " ) " +
+        'JOIN role ON role.id = role_user.role ' +
+        'GROUP BY org.id ' +
+        'ORDER BY org.name',
+        [req.params.user, req.params.user],
+        function (err, rows) {
+
+            if (err) {
+                console.log(err);
+                return res.send(500);
+            }
+
+            res.json(rows.map(function(row){
+                //row.roles = row.roles ? row.roles.split(', ') : [];
+                row.apps = row.apps ? row.apps.split(', ') : [];
                 return row;
             }));
         });
