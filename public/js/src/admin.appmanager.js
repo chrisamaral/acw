@@ -1,9 +1,7 @@
 /** @jsx React.DOM */
 (function (window, $) {
     "use strict";
-    function uniqueId(){
-        return String.fromCharCode(65 + Math.floor(Math.random() * 26)).toLowerCase() + Date.now().toString(36);
-    }
+
     var acw = window.acw,
         components = acw.components,
         React = window.React,
@@ -46,7 +44,7 @@
             }
 
             if (!fPattern.test(imgFile.type)) {
-                new_alerts[uniqueId()] = ['danger', (React.DOM.div(null, React.DOM.strong(null, "Formato inválido!"), " Os formatos válidos são ", React.DOM.strong(null, "jpeg"), " e ", React.DOM.strong(null, "png")))];
+                new_alerts[acw.uniqueId()] = ['danger', (React.DOM.div(null, React.DOM.strong(null, "Formato inválido!"), " Os formatos válidos são ", React.DOM.strong(null, "jpeg"), " e ", React.DOM.strong(null, "png")))];
                 this.refs.appIconPreview.getDOMNode().value = '';
                 return this.setState({preview: null, alerts: new_alerts});
             }
@@ -56,12 +54,10 @@
             }.bind(this);
             fReader.readAsDataURL(imgFile);
         },
-        dismissAlert: function (e) {
-            e.preventDefault();
+        dismissAlert: function (id) {
             var new_alerts = this.state.alerts;
-            delete new_alerts[$(e.currentTarget).data('alert-id')];
+            delete new_alerts[id];
             this.setState({alerts: new_alerts});
-            return false;
         },
         handleSubmit: function (e) {
             e.preventDefault();
@@ -73,7 +69,7 @@
                     that.props.setIcon(this.responseText);
                     that.setState({preview: null});
                 } else {
-                    new_alerts[uniqueId()] = ['danger', (React.DOM.div(null, React.DOM.strong(null, this.responseText), " Não foi possível salvar o novo ícone"))];
+                    new_alerts[acw.uniqueId()] = ['danger', (React.DOM.div(null, React.DOM.strong(null, this.responseText), " Não foi possível salvar o novo ícone"))];
                     that.setState({alerts: new_alerts, preview: null});
                 }
                 setTimeout(function(){

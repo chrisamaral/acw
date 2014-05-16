@@ -132,7 +132,7 @@ exports.getUserOrgs = function(req, res){
 };
 
 exports.getUserOrgInfo = function(req, res){
-    var q = etc.db.query('SELECT ' +
+    etc.db.query('SELECT ' +
             'org.id, org.name org, ' +
             'GROUP_CONCAT(DISTINCT role.descr SEPARATOR ", ") roles, ' +
             'GROUP_CONCAT(DISTINCT app.name SEPARATOR ", ") apps ' +

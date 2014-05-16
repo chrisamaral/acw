@@ -565,6 +565,7 @@ exports.insertOrgUser = function(req, res){
                 }, ' ON DUPLICATE KEY UPDATE timestamp = current_timestamp ')
             }
         ], function(err, id){
+            db.releaseConnection();
             if (err) {
                 console.log(err);
                 return res.send(500);

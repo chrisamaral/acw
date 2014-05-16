@@ -1,8 +1,14 @@
 /** @jsx React.DOM */
 (function (window, $) {
     "use strict";
+
     window.acw = window.acw || {};
+
     var components = {}, React = window.React, Tab, TabContent, AdminTabs, acw = window.acw;
+
+    acw.uniqueId = function(){
+        return String.fromCharCode(65 + Math.floor(Math.random() * 26)).toLowerCase() + Date.now().toString(36);
+    };
 
     TabContent = React.createClass({displayName: 'TabContent',
         render: function () {

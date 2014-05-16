@@ -44,7 +44,10 @@ html
                                             span
                                             img(src="/img/user.png")
                                     b.userName #{user.short_name}
+                                        span.caret
                                 ul.dropdown-menu
+                                    li
+                                        a(href="/home") Início
                                     if pages
                                         each page in pages
                                             li

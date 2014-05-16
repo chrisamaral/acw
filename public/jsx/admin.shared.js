@@ -47,6 +47,17 @@
     });
 
     components.AlertList = React.createClass({
+        dismissAlert: function (e) {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (this.props.dismissAlert) {
+                this.props.dismissAlert($(e.currentTarget).data('alert-id'));
+            }
+
+            return false;
+        },
         render: function() {
             return (
                 <div className='formAlerts'>
@@ -55,7 +66,7 @@
                         classes['alert-' + alert[0]] = true;
                         return (
                             <div key={key} className={React.addons.classSet(classes)}>
-                                <button data-alert-id={key} onClick={this.props.dismissAlert} type="button" className="close" aria-hidden="true">&times;</button>
+                                <button data-alert-id={key} onClick={this.dismissAlert} type="button" className="close" aria-hidden="true">&times;</button>
                                     {alert[1]}
                             </div>);
                     }.bind(this))}
@@ -69,12 +80,10 @@
         getInitialState: function () {
             return {abbr: this.props.item.abbr, name: this.props.item.name, active: this.props.item.active, alerts: {}};
         },
-        dismissAlert: function (e) {
-            e.preventDefault();
+        dismissAlert: function (id) {
             var new_alerts = this.state.alerts;
-            delete new_alerts[$(e.currentTarget).data('alert-id')];
+            delete new_alerts[id];
             this.setState({alerts: new_alerts});
-            return false;
         },
         onCheck: function(e){
             var input = e.currentTarget;
@@ -97,7 +106,7 @@
                 .fail(function(xhr){
 
                     var new_alerts = this.state.alerts;
-                    new_alerts[uniqueId()] = ['danger', xhr.responseText];
+                    new_alerts[acw.uniqueId()] = ['danger', xhr.responseText];
                     this.setState({
                         alerts: new_alerts
                     });

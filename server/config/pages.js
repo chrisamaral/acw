@@ -33,7 +33,9 @@ pages.admin = {
 pages.login = {
     css: ['/css/login.css']
 };
-
+pages.home = {
+    js: [jsPath + '/home.js']
+};
 
 for (var i in pages) {
     var page = {js: pages[i].js || [], css: pages[i].css || []};

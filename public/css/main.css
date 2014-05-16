@@ -27,6 +27,7 @@ body{
 
 #mainNav{
 	background-color: #1D203C;
+    /*background-color: #333A51;*/
 }
 #mainNav .navbar-brand{
 	position: relative;
@@ -75,6 +76,9 @@ body{
 }
 #navUser>.userName{
 	padding-left: 30px;
+}
+#navUser>.userName>.caret{
+    margin-left: 1em;
 }
 #navUser>.userAvatar{
 	display: block;
