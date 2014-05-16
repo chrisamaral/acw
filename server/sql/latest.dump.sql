@@ -731,7 +731,6 @@ CREATE TABLE `session` (
 
 LOCK TABLES `session` WRITE;
 /*!40000 ALTER TABLE `session` DISABLE KEYS */;
-INSERT INTO `session` VALUES ('g2DvJpMeoqWrpF91sK6TEd9K','2014-05-16 16:04:09','2014-05-17 16:04:09',NULL,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2014-05-17T19:04:09.378Z\",\"httpOnly\":true,\"path\":\"/\"},\"passport\":{},\"flash\":{}}','2014-05-16 19:04:09'),('Or1sB3oWpo4BWmbpObczL5Gs','2014-05-16 16:22:40','2014-05-17 16:22:56','krbnc2n5da','{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2014-05-17T19:22:56.427Z\",\"httpOnly\":true,\"path\":\"/\"},\"passport\":{\"user\":\"krbnc2n5da\"},\"flash\":{},\"user\":\"krbnc2n5da\"}','2014-05-16 19:22:56'),('ZEc6uNtbZtLc1F68m2KxFNPb','2014-05-15 17:09:58','2014-05-16 17:09:58',NULL,'{\"cookie\":{\"originalMaxAge\":86400000,\"expires\":\"2014-05-16T20:09:58.310Z\",\"httpOnly\":true,\"path\":\"/\"},\"passport\":{},\"flash\":{}}','2014-05-15 20:09:58');
 /*!40000 ALTER TABLE `session` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -883,4 +882,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2014-05-16 20:47:46
+-- Dump completed on 2014-05-16 20:49:53
