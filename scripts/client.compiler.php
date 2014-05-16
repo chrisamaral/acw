@@ -13,7 +13,7 @@ function compile_js($path){
     system($cmd);
 }
 
-$jsFiles = explode("\n", trim(shell_exec("find public/js/src/ -name '*.js'")));
+$jsFiles = explode("\n", trim(shell_exec('find public/js/src/ -type f -not -path "*/.module-cache/*" -name "*.js"')));
 foreach($jsFiles as $path){
     compile_js($path);
 }

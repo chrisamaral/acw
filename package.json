@@ -33,6 +33,7 @@
     "multiparty": "*",
     "mv": "*",
     "mysql-activerecord": "*",
-    "strftime": "*"
+    "strftime": "*",
+    "connect-redis": "*"
   }
 }

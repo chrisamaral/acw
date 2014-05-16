@@ -60,7 +60,8 @@ module.exports = function (expressSession) {
 
         serialized.creation = new Date();
         etc.db.query('INSERT INTO session SET ?', serialized, function (err, result) {
-            if (err) {
+
+            if (err && err.code === 'ER_DUP_ENTRY') {
                 delete serialized.sid;
                 delete serialized.creation;
                 etc.db.query('UPDATE session SET ? WHERE sid = ?', [serialized, sid], function (err) {
@@ -71,6 +72,10 @@ module.exports = function (expressSession) {
                     fn();
                 });
                 return;
+            }
+
+            if (err) {
+               return fn(err);
             }
 
             fn();

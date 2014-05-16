@@ -125,8 +125,8 @@
                         React.DOM.input( {id:"itemAbbr", name:"abbr", maxLength:15, className:"form-control", type:"text", required:true, valueLink:this.linkState('abbr')} )
                     ),
                     React.DOM.div( {className:"col-md-8 form-group"}, 
-                        React.DOM.label( {htmlFor:"itemName"}, "Descrição"),
-                        React.DOM.input( {id:"itemName", name:"name", className:"form-control", type:"text", required:true, valueLink:this.linkState('name')} )
+                        React.DOM.label( {htmlFor:"itemName"}, "Descrição/Slogan/Motto"),
+                        React.DOM.textarea( {id:"itemName", name:"name", rows:3, className:"form-control", maxLength:200, type:"text", required:true, valueLink:this.linkState('name')} )
                     )
                 ),
                 AlertList( {alerts:this.state.alerts, dismissAlert:this.dismissAlert} ),
@@ -152,18 +152,24 @@
     components.StdListItem = React.createClass({displayName: 'StdListItem',
         clickItem: function (e) {
             e.preventDefault();
-            this.props.setSelected(this.props.item);
+
+            if (this.props.setSelected) {
+                this.props.setSelected(this.props.item);
+            } else if (this.props.onClick) {
+                this.props.onClick(this.props.item);
+            }
+
         },
         render: function () {
             return React.DOM.a( {href:"#",
                 className:React.addons.classSet({
                     'list-group-item': true,
                     stdListItem: true,
-                    selected: this.props.selected,
-                    deleted: !this.props.item.active
-                }),
-                onClick:this.clickItem}, 
-                    this.props.selected ? '❯ ' + this.props.item.name : this.props.item.name
+                    active: this.props.selected,
+                    'deleted-item': !this.props.item.active
+                }), onClick:this.clickItem}, 
+                    React.DOM.h5( {className:"list-group-item-heading"}, this.props.item.abbr),
+                    React.DOM.p( {className:"list-group-item-text"}, this.props.item.name)
             );
         }
     });

@@ -10,7 +10,8 @@
         ContactList = components.ContactList,
         OrgApps,
         OrgApp,
-        UserForm;
+        UserForm,
+        AlertList = components.AlertList;
 
     function DefaultUser(){
         this.id = null;
@@ -41,7 +42,7 @@
                 <label>
                     <input type='checkbox'
                         checked={this.state.enabled}
-                        onChange={this.toggleApp} />{this.props.name}
+                        onChange={this.toggleApp} />{this.props.abbr}
                 </label>
             </div>
         }
@@ -71,6 +72,7 @@
                                 key={app.id}
                                 enabled={app.enabled}
                                 name={app.name}
+                                abbr={app.abbr}
                                 org_app={app.org_app}
                                 user={this.props.user} />;
                 }.bind(this))}
@@ -80,18 +82,36 @@
     UserForm = React.createClass({
         mixins: [React.addons.LinkedStateMixin],
         getInitialState: function(){
-            return this.props.user;
+            var x = this.props.user;
+            x.emailAlerts = {};
+            return x;
+        },
+        userState: function(){
+            var user = _.merge({},this.state);
+            delete user.emailAlerts;
+            return user;
         },
         setNewEmail: function (e) {
             e.preventDefault();
 
-            var input = this.refs.newEmail.getDOMNode(), new_user = this.state, newEmail = input.value;
+            var input = this.refs.newEmail.getDOMNode(), new_user = this.userState(), newEmail = input.value;
 
             new_user.emails = new_user.emails.concat([newEmail]);
-
             this.props.setSelected(new_user, true);
 
-            $.post('/admin/user/' + this.state.id + '/email', {email: newEmail});
+            $.post('/admin/user/' + this.state.id + '/email', {email: newEmail})
+                .fail(function (xhr) {
+                    var new_alerts = this.state.emailAlerts, emails = this.state.emails.filter(function(email){
+                        return email !== newEmail;
+                    });
+
+                    new_alerts[acw.uniqueId()] = ['danger', xhr.responseText];
+                    this.setState({emailAlerts: new_alerts});
+
+                    setTimeout(function(){
+                        this.setState({emails: emails});
+                    }.bind(this), 2000);
+                }.bind(this));
 
             input.value = '';
         },
@@ -105,11 +125,23 @@
                         this.props.setSelected(foundUser);
                     }
                 }.bind(this))
+                .fail(function(xhr){
+                    var new_alerts = this.state.emailAlerts;
+                    new_alerts[acw.uniqueId()] = ['warning', xhr.responseText];
+                    this.setState({
+                        emailAlerts: new_alerts
+                    });
+                }.bind(this))
                 .always(function(){
                     input.value = '';
                     input.disabled = false;
                 });
 
+        },
+        dismissEmailAlerts: function (id) {
+            var new_alerts = this.state.emailAlerts;
+            delete new_alerts[id];
+            this.setState({emailAlerts: new_alerts});
         },
         componentWillReceiveProps: function (new_props) {
             this.setState(new_props.user);
@@ -119,14 +151,15 @@
             var uri = '/admin/org/' + this.props.org + '/user';
             $.post(uri, $(e.currentTarget).serialize())
                 .done(function(id){
-                    var state = this.state;
-                    state.id = id;
-                    this.props.setSelected(state, true);
+                    var user = this.userState();
+                    user.id = id;
+                    this.props.setSelected(user, true);
                 }.bind(this));
         },
         toggleUser: function (e) {
-            var uri = '/admin/org/' + this.props.org + '/user/' + this.state.id, new_user = this.state;
+            var uri = '/admin/org/' + this.props.org + '/user/' + this.state.id, new_user = this.userState();
             new_user.active = e.currentTarget.checked;
+
             this.props.setSelected(new_user, true);
 
             $.ajax(uri, {
@@ -134,7 +167,7 @@
             });
         },
         toggleAdmin: function(e){
-            var uri = '/admin/org/' + this.props.org + '/user/' + this.state.id + '/admin', new_user = this.state;
+            var uri = '/admin/org/' + this.props.org + '/user/' + this.state.id + '/admin', new_user = this.userState();
             new_user.isAdmin = e.currentTarget.checked;
             this.props.setSelected(new_user, true);
 
@@ -186,6 +219,7 @@
                     <div className='col-md-6'>
                         <form role='form' onSubmit={this.state.id ? this.setNewEmail : this.lookForEmail}>
                             <div className='form-group'>
+                                <AlertList alerts={this.state.emailAlerts} dismissAlert={this.dismissEmailAlerts} />
                                 <input ref='newEmail' name='email'
                                     type='email' className='form-control' required={true}
                                     placeholder={this.state.id ? 'Novo email' : 'Buscar por email'} />

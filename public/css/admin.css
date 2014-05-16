@@ -22,17 +22,12 @@ input[type="search"]{
 .stdList{
     min-height: 100px;
     border: 1px solid rgb(220, 220, 220);
+    border-radius: 4px;
+
 }
 .stdList>.others, .stdList>a{
     max-height: 30em;
     overflow-y: auto;
-}
-.stdList>.selected{
-    border-bottom: 1px solid rgb(220, 220, 220);
-}
-.stdList>.selected>a, .stdList>a.selected{
-    font-weight: bold;
-    /*font-size: medium;*/
 }
 
 .stdListItem{
@@ -46,9 +41,8 @@ input[type="search"]{
 .stdListItem:last-child{
     padding-bottom: 1em;
 }
-
-.list-group-item.deleted{
-    color: #BDBDBD !important;
+.stdListItem.deleted-item{
+    opacity: 0.5;
 }
 .userAvatarThumb{
     height: 100%;

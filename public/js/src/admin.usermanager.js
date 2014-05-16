@@ -43,25 +43,7 @@
         }
     });
 
-    UserItem = React.createClass({displayName: 'UserItem',
-        userClick: function(e){
-            e.preventDefault();
-            this.props.onUserClick(this.props.user.id);
-        },
-        render: function () {
-            var user = this.props.user,
-                label = user.full_name || user.short_name || 'sem nome ...',
-                classes = React.addons.classSet({
-                    'list-group-item': true,
-                    stdListItem: true,
-                    deleted: !user.active,
-                    theOne: this.props.isSelected
-                });
-
-            label = this.props.isSelected ? '❯ ' + label : label;
-            return (React.DOM.a( {href:"#", onClick:this.userClick, className:classes}, label));
-        }
-    });
+    UserItem = components.StdListItem;
     
     (function(){
         var scrollTimeout;
@@ -95,17 +77,29 @@
                         theOne ?
                             (React.DOM.div( {className:"selected"}, 
                                 UserItem(
-                                    {key:theOne.id, user:theOne,
-                                    onUserClick:this.props.onUserClick,
-                                    isSelected:true} )
+                                    {key:theOne.id,
+                                    item:{
+                                        id: theOne.id,
+                                        name: theOne.full_name,
+                                        abbr: theOne.short_name,
+                                        active: theOne.active
+                                    },
+                                    onClick:this.props.onUserClick,
+                                    selected:true} )
                             ))
                         : null,
                         React.DOM.div( {className:"others", ref:"userList", onScroll:this.scrollChange}, 
                             this.props.users.map(function(user, index){
                                 return (UserItem(
-                                    {key:user.id, user:user,
-                                    onUserClick:this.props.onUserClick,
-                                    isSelected:false} ));
+                                    {key:user.id,
+                                    item:{
+                                        id: user.id,
+                                        name: user.full_name,
+                                        abbr: user.short_name,
+                                        active: user.active
+                                    },
+                                    onClick:this.props.onUserClick,
+                                    selected:false} ));
                             }.bind(this))
                         )
                     )
@@ -138,7 +132,8 @@
                 }
                 this.reloadList();
             },
-            selectUser: function(userID){
+            selectUser: function(user){
+                var userID = user.id;
                 userID = this.state.selectedUser === userID ? null : userID;
                 this.setState({selectedUser: userID});
             },

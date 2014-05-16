@@ -79,15 +79,15 @@ div.panel.panel-default.contentWrapper
             div.form-group
                 label(for="oldPassword", class="col-sm-3 control-label") Senha Antiga
                 div.col-sm-9
-                    input(type="password", id='oldPassword', class="form-control", name='oldPassword')
+                    input(type="password", id='oldPassword', class="form-control", name='oldPassword', autocomplete='off')
             div.form-group
                 label(for="newPassword", class="col-sm-3 control-label") Nova Senha
                 div.col-sm-9
-                    input(type="password", id='newPassword', class="form-control", name='newPassword', required=true)
+                    input(type="password", id='newPassword', class="form-control", name='newPassword', required=true, autocomplete='off')
             div.form-group
                 label(for="repeatPassword", class="col-sm-3 control-label") Repita
                 div.col-sm-9
-                    input(type="password", id='repeatPassword', class="form-control", name='repeatPassword', required=true)
+                    input(type="password", id='repeatPassword', class="form-control", name='repeatPassword', required=true, autocomplete='off')
             div.form-group
                 div.col-sm-offset-3.col-sm-9
                     button(type="submit", class="btn btn-default") Salvar

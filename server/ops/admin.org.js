@@ -29,8 +29,8 @@ exports.saveOrg = function(req, res){
         etc.pool.getNewAdapter(function (db) {
             function onSave(err, info) {
                 if (err) {
-                    if (err.code = 'ER_DUP_ENTRY') {
-                        return res.status(400).send('A abreviação "' + org.abbr + '" já foi utilizada, e é necessário que ela seja única.');
+                    if (err.code === 'ER_DUP_ENTRY') {
+                        return res.status(403).send('O nome "' + org.abbr + '" já foi utilizado.');
                     }
                     return res.send(500);
                 }
@@ -135,7 +135,7 @@ exports.getUserOrgInfo = function(req, res){
     etc.db.query('SELECT ' +
             'org.id, org.name org, ' +
             'GROUP_CONCAT(DISTINCT role.descr SEPARATOR ", ") roles, ' +
-            'GROUP_CONCAT(DISTINCT app.name SEPARATOR ", ") apps ' +
+            'GROUP_CONCAT(DISTINCT app.abbr SEPARATOR ":|:|:") apps ' +
         'FROM org ' +
         'JOIN active_org ON org.id = active_org.org ' +
             'LEFT JOIN org_app ON org_app.org = org.id ' +
@@ -159,7 +159,7 @@ exports.getUserOrgInfo = function(req, res){
 
             res.json(rows.map(function(row){
                 //row.roles = row.roles ? row.roles.split(', ') : [];
-                row.apps = row.apps ? row.apps.split(', ') : [];
+                row.apps = row.apps ? row.apps.split(':|:|:') : [];
                 return row;
             }));
         });

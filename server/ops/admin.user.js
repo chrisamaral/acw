@@ -359,6 +359,9 @@ exports.newEmail = function (req, res) {
         [req.params.user, req.body.email],
         function (err, info) {
             if (err) {
+                if (err.code === 'ER_DUP_ENTRY') {
+                    return res.status(403).send('O email ' + req.body.email + ' já está associado a outro usuário do sistema.');
+                }
                 console.log(err);
                 return res.send(500);
             }
@@ -379,13 +382,16 @@ exports.getOrgUsers = function(req, res) {
                 'GROUP_CONCAT(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels, ' +
                 'GROUP_CONCAT(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails ' +
             'FROM user ' +
-            'JOIN role_user ON ( role_user.user = user.id AND role_user.org = ? ) ' +
+            'JOIN role_user ON ( role_user.user = user.id AND ( role_user.org = ? OR ( role_user.role = "admin" AND role_user.org IS NULL) ) ) ' +
             'LEFT JOIN user_email ON user_email.user = user.id ' +
             'LEFT JOIN user_tel ON user_tel.user = user.id ' +
             'GROUP BY user.id ' +
             'ORDER BY user.full_name ' +
         ') x ' +
-        'WHERE roles IS NULL OR roles NOT LIKE "%org.admin%" OR creation > (select creation from user where id = ? ) ',
+        'WHERE ' +
+        '   roles IS NULL ' +
+        '   OR roles NOT LIKE "%admin%" ' +
+        '   OR creation > (select creation from user where id = ? ) ',
         [req.params.org, req.user.id],
         function (err, rows) {
             if (err) {
@@ -409,8 +415,7 @@ exports.getOrgUsers = function(req, res) {
     );
 };
 exports.findUserByEmail = function (req, res) {
-    etc.db.query(
-            'SELECT * ' +
+    etc.db.query('SELECT * ' +
             'FROM ( ' +
                 'SELECT ' +
                     'user.id, ' +
@@ -423,7 +428,7 @@ exports.findUserByEmail = function (req, res) {
                     'GROUP_CONCAT(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels, ' +
                     'GROUP_CONCAT(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails ' +
                 'FROM user ' +
-                'LEFT JOIN role_user ON ( role_user.user = user.id AND role_user.org = ? ) ' +
+                'LEFT JOIN role_user ON ( role_user.user = user.id AND ( role_user.org = ? OR ( role_user.role = "admin" AND role_user.org IS NULL) ) ) ' +
                 'LEFT JOIN user_email ON user_email.user = user.id ' +
                 'LEFT JOIN user_tel ON user_tel.user = user.id ' +
                 'WHERE ' +
@@ -431,7 +436,10 @@ exports.findUserByEmail = function (req, res) {
                 'GROUP BY user.id ' +
                 'ORDER BY user.full_name ' +
             ') x ' +
-            'WHERE roles IS NULL OR roles NOT LIKE "%org.admin%" OR creation > (select creation from user where id = ? ) ',
+            'WHERE ' +
+            '   roles IS NULL ' +
+            '   OR roles NOT LIKE "%admin%" ' +
+            '   OR creation > (select creation from user where id = ? ) ',
         [req.params.org, req.query.email, req.user.id],
         function (err, rows) {
             if (err) {
@@ -440,7 +448,7 @@ exports.findUserByEmail = function (req, res) {
             }
 
             if (!rows[0]) {
-                return res.send(404);
+                return res.status(404).send('O email ' + req.query.email + ' não está associado a nenhum usuário disponível para sua organização.');
             }
 
             var user = rows[0];

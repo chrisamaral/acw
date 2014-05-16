@@ -39,8 +39,8 @@
                 new_alerts = this.state.alerts;
 
             if (!imgFile) {
-                return this.setState({preview: null});
                 this.refs.appIconPreview.getDOMNode().value = '';
+                return this.setState({preview: null});
             }
 
             if (!fPattern.test(imgFile.type)) {

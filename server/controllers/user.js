@@ -88,7 +88,7 @@ etc.express.get('/user/name', etc.authorized.can('access private page'), functio
 etc.express.post('/user/name', etc.authorized.can('access private page'), function (req, res) {
 
     if (!validator.isLength(req.body.short_name, 3) || !validator.isLength(req.body.full_name, 3)) {
-        res.status(400);
+        res.status(403);
         return res.send('Nome inválido');
     }
 
@@ -139,7 +139,7 @@ etc.express.post('/user/tel', etc.authorized.can('access private page'), functio
             && validator.isLength(req.body.number, 1)
         )
     ) {
-        res.status(400);
+        res.status(403);
         res.send('Número de telefone inválido.');
         return;
     }
@@ -202,7 +202,7 @@ etc.express.get('/user/email', etc.authorized.can('access private page'), functi
 
 etc.express.post('/user/email', etc.authorized.can('access private page'), function (req, res) {
     if (!validator.isEmail(req.body.email)) {
-        res.status(400);
+        res.status(403);
         return res.send('Email inválido.');
     }
     etc.db.query(' INSERT INTO user_email SET ? ', [{email: req.body.email, user: req.user.id}],
@@ -250,13 +250,13 @@ etc.express.delete('/user/email', etc.authorized.can('access private page'), fun
 etc.express.post('/user/password', etc.authorized.can('access private page'), function (req, res) {
 
     if (!validator.isLength(req.body.newPassword, 1) || zxcvbn(req.body.newPassword) < 3) {
-        res.status(400);
+        res.status(403);
         res.send('Senha Inválida.');
         return;
     }
 
     if (req.body.newPassword !== req.body.repeatPassword) {
-        res.status(400);
+        res.status(403);
         res.send('Você falhou a repetição das senhas.');
         return;
     }
@@ -313,14 +313,14 @@ etc.express.post('/user/password', etc.authorized.can('access private page'), fu
                         return actuallyChangePassword();
                     }
 
-                    res.status(400);
+                    res.status(403);
                     return res.send('Senha antiga não confere.');
                 });
 
                 return;
             }
 
-            res.send(400);
+            res.send(403);
         });
 });
 etc.express.get('/user', etc.authorized.can('access private page'), function (req, res) {

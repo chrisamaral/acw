@@ -34,8 +34,8 @@ exports.saveApp = function(req, res){
         etc.pool.getNewAdapter(function (db) {
             function onSave(err, info) {
                 if (err) {
-                    if (err.code = 'ER_DUP_ENTRY') {
-                        return res.status(400).send('A abreviação "' + app.abbr + '" já foi utilizada, e é necessário que ela seja única.');
+                    if (err.code === 'ER_DUP_ENTRY') {
+                        return res.status(403).send('O nome "' + app.abbr + '" já foi utilizado.');
                     }
                     return res.send(500);
                 }

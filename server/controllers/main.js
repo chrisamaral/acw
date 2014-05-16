@@ -6,7 +6,10 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     cookieParser = require('cookie-parser'),
     expressSession = require('express-session'),
-    XSession = require('../lib/xsession.js')(expressSession),
+
+    RedisStore = require('connect-redis')(expressSession),
+    //XSession = require('../lib/xsession.js')(expressSession),
+
     sessMaxAge = 1000 * 60 * 60 * 24,
     customAuth,
     path = require('path'),
@@ -20,7 +23,8 @@ etc.express.use(expressSession({
     secret: 'maiorsegredodomundo',
     key: 'acw.sid',
     cookie: { maxAge: sessMaxAge },
-    store: new XSession()
+    //store: new XSession()
+    store: new RedisStore()
 }));
 
 etc.express.use(connetFlash());
@@ -33,13 +37,10 @@ customAuth.init(function () {
         etc.helpers.serveIt('front', '/',  req, res);
     });
 
-    etc.express.get('/home', etc.authorized.can('access private page'), function (req, res) {
-        etc.helpers.serveIt('home', 'home',  req, res);
-    });
-
     // adicionar rotas de login
     customAuth.listen();
 
+    require('./home.js');
     require('./user.js');
     require('./admin.js');
     if (etc.ENV === 'development') {
@@ -58,11 +59,8 @@ customAuth.init(function () {
     etc.express.use(function (err, req, res, next) {
 
         if (err && err instanceof etc.authorized.UnauthorizedError === false) {
-            console.log(err);
             return res.status(500).render('errors/500');
         }
-
-        console.log(err);
 
         if (!req.isAuthenticated()) {
             req.session.redirect_to = req.originalUrl;
