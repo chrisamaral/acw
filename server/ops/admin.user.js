@@ -390,9 +390,10 @@ exports.getOrgUsers = function(req, res) {
         ') x ' +
         'WHERE ' +
         '   roles IS NULL ' +
+        '   OR id = ? ' +
         '   OR roles NOT LIKE "%admin%" ' +
         '   OR creation > (select creation from user where id = ? ) ',
-        [req.params.org, req.user.id],
+        [req.params.org, req.user.id, req.user.id],
         function (err, rows) {
             if (err) {
                 console.log(err);
@@ -438,9 +439,10 @@ exports.findUserByEmail = function (req, res) {
             ') x ' +
             'WHERE ' +
             '   roles IS NULL ' +
+            '   OR id = ? ' +
             '   OR roles NOT LIKE "%admin%" ' +
             '   OR creation > (select creation from user where id = ? ) ',
-        [req.params.org, req.query.email, req.user.id],
+        [req.params.org, req.query.email, req.user.id, req.user.id],
         function (err, rows) {
             if (err) {
                 console.log(err);

@@ -257,6 +257,6 @@
         $('#newPassword').on('input', strengthMeter);
     }
 
-    init();
+    window.onLoadRun = init;
 
 }(jQuery));

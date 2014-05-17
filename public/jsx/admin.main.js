@@ -127,6 +127,6 @@
     function render(){
         React.renderComponent(<AdminTabs source="/admin/tabs" />, $('.contentWrapper')[0]);
     }
-    
-    render();
+
+    window.onLoadRun = render;
 }(window, jQuery));

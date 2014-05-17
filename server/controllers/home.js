@@ -40,7 +40,7 @@ etc.express.get('/home', etc.authorized.can('access private page'), function (re
                         });
                 } else {
                     etc.db.query('SELECT app.id app, org_app.id, app.icon, app.abbr, app.name descr, app_user.init, org.abbr orgAbbr, org.id orgId ' +
-                        'FROM app_user' +
+                        'FROM app_user ' +
                         'JOIN org_app ON app_user.org_app = org_app.id ' +
                         'JOIN app ON app.id = org_app.app ' +
                         'JOIN org ON org.id = org_app.org ' +

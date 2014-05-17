@@ -12,7 +12,7 @@ html
         script
             | window.jsPath = '#{jsPath}';
         if dependencies && dependencies.js
-            script LazyLoad.js(#{dependencies.js});
+            script LazyLoad.js(#{dependencies.js}, function(){ if(window.onLoadRun) { window.onLoadRun(); } });
         if dependencies && dependencies.css
             each css in dependencies.css
                 link(href=css, rel='stylesheet', type='text/css', media='all')
@@ -69,4 +69,3 @@ html
                 div.alert.alert-info.alert-dismissable
                     button(type="button" class="close" data-dismiss="alert" aria-hidden="true") &times;
                     div #{msg}
-
