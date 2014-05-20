@@ -15,6 +15,7 @@ var express = require('express'),
     path = require('path'),
     pub_dir = path.normalize(__dirname + "/../..") + '/public';
 
+etc.sessionStore = new RedisStore();
 etc.express = express();
 etc.express.use(express.static(pub_dir));
 etc.express.use(bodyParser());
@@ -24,7 +25,7 @@ etc.express.use(expressSession({
     key: 'acw.sid',
     cookie: { maxAge: sessMaxAge },
     //store: new XSession()
-    store: new RedisStore()
+    store: etc.sessionStore
 }));
 
 etc.express.use(connetFlash());

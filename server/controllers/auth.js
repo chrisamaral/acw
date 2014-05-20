@@ -1,5 +1,5 @@
 "use strict";
-var etc = require('../base.js')();
+var etc = require('../base.js')(), async = require('async');
 
 function setupAuth(){
     var bcrypt = require('bcrypt'),
@@ -140,7 +140,69 @@ function HandleExternalLogin(req, res, next) {
                 to = req.session.redirect_to;
                 delete req.session.redirect_to;
             }
-            res.redirect(to);
+
+            async.waterfall([
+                function (callback) {
+
+                    etc.db.query('SELECT session FROM user_session WHERE user = ?', [req.user.id], function(err, rows){
+                        if(err){
+                            return callback(err);
+                        }
+                        callback(null, rows && rows[0] ? rows[0].session : null);
+                    });
+
+                }, function (oldSession, callback) {
+
+                    if (!oldSession) {
+                        return callback(null, oldSession);
+                    }
+
+                    etc.sessionStore.destroy(oldSession, function (err, data) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        callback(null, oldSession);
+                    });
+
+                }, function (oldSession, callback) {
+
+                    if (!oldSession) {
+                        return callback(null, oldSession);
+                    }
+
+                    etc.db.query('DELETE FROM user_session WHERE user = ?', [req.user.id], function (err, info) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        callback(null, oldSession);
+                    });
+
+                }, function (oldSession, callback) {
+
+                    var session = {user: req.user.id, session: req.sessionID};
+
+                    etc.db.query('INSERT INTO user_session SET ? ', session, function (err, info) {
+                        if (err) {
+                            return callback(err);
+                        }
+                        callback(null, oldSession);
+                    });
+
+                }
+            ], function (err, oldSession) {
+
+                if (err) {
+
+                    req.flash('error', 'Falha no login.');
+                    req.logout();
+                    res.redirect('/login')
+
+                    return;
+                }
+
+                res.redirect(to);
+            });
+
         });
     })(req, res, next);
 }
