@@ -116,14 +116,23 @@
 
     components.AppManager =  React.createClass({displayName: 'AppManager',
         getInitialState: function () {
-            return {selected: new App()};
+            return {
+                selected: new App(),
+                forceUpdate: (new Date()).getTime()
+            };
         },
-        setSelected: function (item, keepOn) {
-            this.setState({
-                selected: !keepOn && item.id === this.state.selected.id
+        setSelected: function (item, forceReload) {
+            var new_state = {
+                selected: !forceReload && item.id === this.state.selected.id
                     ? new App()
                     : item
-            });
+            };
+
+            if (forceReload) {
+                new_state.forceUpdate = (new Date()).getTime();
+            }
+
+            this.setState(new_state);
         },
         setIcon: function (icon) {
             this.setState({selected: _.merge(this.state.selected, {icon: icon})});
@@ -134,6 +143,7 @@
                     React.DOM.div( {className:"col-md-4"}, 
                         AppList(
                             {uri:"/admin/apps",
+                            forceUpdate:this.state.forceUpdate,
                             selected:this.state.selected,
                             setSelected:this.setSelected} )
                     ),

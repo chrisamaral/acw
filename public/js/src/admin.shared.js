@@ -93,7 +93,7 @@
             e.preventDefault();
             $.post(e.currentTarget.action, $(e.currentTarget).serialize())
                 .done(function(id){
-                    var item = _.merge(this.props.item, {
+                    var item = _.merge({}, this.props.item, {
                         abbr: this.state.abbr,
                         name: this.state.name,
                         active: this.state.active

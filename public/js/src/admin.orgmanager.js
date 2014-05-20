@@ -98,14 +98,21 @@
 
     components.OrgManager =  React.createClass({displayName: 'OrgManager',
         getInitialState: function () {
-            return {selected: new Org()};
+            return {
+                selected: new Org(),
+                forceUpdate: (new Date()).getTime()
+            };
         },
-        setSelected: function (item, keepOn) {
-            this.setState({
-                selected: !keepOn && item.id === this.state.selected.id
+        setSelected: function (item, forceReload) {
+            var new_state = {
+                selected: !forceReload && item.id === this.state.selected.id
                     ? new Org()
                     : item
-            });
+            };
+            if (forceReload) {
+                new_state.forceUpdate = (new Date()).getTime();
+            }
+            this.setState(new_state);
         },
 
         render: function () {
@@ -114,6 +121,7 @@
                     React.DOM.div( {className:"col-md-4"}, 
                         OrgList(
                             {uri:"/admin/orgs",
+                            forceUpdate:this.state.forceUpdate,
                             selected:this.state.selected,
                             setSelected:this.setSelected} )
                     ),
