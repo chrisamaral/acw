@@ -368,9 +368,8 @@ exports.newEmail = function (req, res) {
             res.send(204);
         });
 };
-exports.getOrgUsers = function(req, res) {
-    etc.db.query(
-        'SELECT * ' +
+exports.getOrgUsers = function (req, res) {
+    etc.db.query('SELECT * ' +
         'FROM (' +
             'SELECT ' +
                 'user.id, ' +
@@ -382,7 +381,7 @@ exports.getOrgUsers = function(req, res) {
                 'GROUP_CONCAT(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels, ' +
                 'GROUP_CONCAT(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails ' +
             'FROM user ' +
-            'JOIN role_user ON ( role_user.user = user.id AND ( role_user.org = ? OR ( role_user.role = "admin" AND role_user.org IS NULL) ) ) ' +
+            'JOIN role_user ON ( role_user.user = user.id AND role_user.org = ? ) ' +
             'LEFT JOIN user_email ON user_email.user = user.id ' +
             'LEFT JOIN user_tel ON user_tel.user = user.id ' +
             'GROUP BY user.id ' +
@@ -399,7 +398,7 @@ exports.getOrgUsers = function(req, res) {
                 console.log(err);
                 return res.send(500);
             }
-            res.json(rows.map(function(user){
+            res.json(rows.map(function (user) {
                 if (user.avatar) {
                     user.avatar = '/media/u/' + user.id + '/1/' + user.avatar;
                 }
@@ -412,8 +411,7 @@ exports.getOrgUsers = function(req, res) {
                 delete user.roles;
                 return user;
             }));
-        }
-    );
+        });
 };
 exports.findUserByEmail = function (req, res) {
     etc.db.query('SELECT * ' +
@@ -429,7 +427,7 @@ exports.findUserByEmail = function (req, res) {
                     'GROUP_CONCAT(DISTINCT concat("(", user_tel.area, ") ", user_tel.number) ORDER BY user_tel.timestamp SEPARATOR ",") tels, ' +
                     'GROUP_CONCAT(DISTINCT user_email.email ORDER BY user_email.timestamp SEPARATOR ",") emails ' +
                 'FROM user ' +
-                'LEFT JOIN role_user ON ( role_user.user = user.id AND ( role_user.org = ? OR ( role_user.role = "admin" AND role_user.org IS NULL) ) ) ' +
+                'LEFT JOIN role_user ON ( role_user.user = user.id AND role_user.org = ? ) ' +
                 'LEFT JOIN user_email ON user_email.user = user.id ' +
                 'LEFT JOIN user_tel ON user_tel.user = user.id ' +
                 'WHERE ' +

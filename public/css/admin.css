@@ -58,6 +58,7 @@ input[type="search"]{
 .ContactList>li:first-child{
     color: green;
     font-weight: bold;
+    overflow-x: hidden;
 }
 .ExistingUserForm{
     margin: 1em;

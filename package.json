@@ -3,13 +3,14 @@
   "description": "ACW Site",
   "version": "0.0.1",
   "private": true,
-  "main": "acw.js",
+  "main": "server/acw.js",
   "repository": {
     "type": "bitbucket",
     "url": "https://bitbucket.org/darthcas/acw"
   },
   "homepage": "http://acwautosis.info",
   "dependencies": {
+    "mysql": "*",
     "debug": "*",
     "express": "4.*",
     "express-session": "*",

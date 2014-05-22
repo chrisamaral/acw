@@ -25,11 +25,9 @@ html
                         span.icon-bar
                         span.icon-bar
                         span.icon-bar
-                    a(class="navbar-brand", href="/")
+                    a(class=isDev?"navbar-brand invisible":"navbar-brand", href="/")
                         span.brandLogo
-                        span.brandName 
-                            if isDev === false
-                                | ACW Automação e Sistemas
+                        span.brandName ACW Automação e Sistemas
                 div(class="navbar-collapse collapse")
                     ul.nav.navbar-nav.navbar-right
                         if user

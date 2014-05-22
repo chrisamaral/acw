@@ -1,7 +1,7 @@
 "use strict";
 var etc = require('../base.js')(), async = require('async');
 
-function setupAuth(){
+function setupAuth() {
     var bcrypt = require('bcrypt'),
         LocalStrategy = require('passport-local').Strategy,
         GoogleStrategy = require('passport-google').Strategy,
@@ -58,11 +58,11 @@ function setupAuth(){
             [emails],
             function (err, rows) {
                 if (err) {
+                    console.log(err);
                     return done(err);
                 }
                 if (rows.length) {
-                    var user = rows[0];
-                    return done(null, user);
+                    return done(null, rows[0]);
                 }
 
                 return done(null, false, {message: 'Email não cadastrado.'});
@@ -145,7 +145,7 @@ function HandleExternalLogin(req, res, next) {
                 function (callback) {
 
                     etc.db.query('SELECT session FROM user_session WHERE user = ?', [req.user.id], function(err, rows){
-                        if(err){
+                        if (err) {
                             return callback(err);
                         }
                         callback(null, rows && rows[0] ? rows[0].session : null);
@@ -181,21 +181,23 @@ function HandleExternalLogin(req, res, next) {
 
                     var session = {user: req.user.id, session: req.sessionID};
 
-                    etc.db.query('INSERT INTO user_session SET ? ', session, function (err, info) {
-                        if (err) {
-                            return callback(err);
-                        }
-                        callback(null, oldSession);
-                    });
+                    etc.db.query('INSERT INTO user_session SET ? ON DUPLICATE KEY UPDATE ? ',
+                        [session, session],
+                        function (err, info) {
+                            if (err) {
+                                return callback(err);
+                            }
+                            callback(null, oldSession);
+                        });
 
                 }
             ], function (err, oldSession) {
 
                 if (err) {
 
-                    req.flash('error', 'Falha no login.');
+                    req.flash('error', 'Falha ao registrar a sessão.');
                     req.logout();
-                    res.redirect('/login')
+                    res.redirect('/login');
 
                     return;
                 }

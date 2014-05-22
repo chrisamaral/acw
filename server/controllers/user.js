@@ -7,7 +7,7 @@ var etc = require('../base.js')(),
     mkdirp = require('mkdirp'),
     gm = require('gm'),
     path = require('path'),
-    formidable = require('formidable');;
+    formidable = require('formidable');
 
 etc.express.get('/user/avatar', etc.authorized.can('access private page'), function (req, res) {
     if (req.user.avatar) {

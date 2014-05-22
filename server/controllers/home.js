@@ -6,15 +6,15 @@ etc.express.get('/home', etc.authorized.can('access private page'), function (re
             function (callback) {
                 etc.db.query('SELECT count(*) c FROM role_user WHERE role_user.user = ? AND role_user.role = "admin"',
                     [req.user.id],
-                    function(err, rows){
-                    if (err) {
-                        callback(err);
-                    }
-                    callback(null, rows && rows[0] && rows[0].c > 0);
-                });
+                    function (err, rows) {
+                        if (err) {
+                            callback(err);
+                        }
+                        callback(null, rows && rows[0] && rows[0].c > 0);
+                    });
             },
             function (isAdmin, callback) {
-                function appMapper(app){
+                function appMapper(app) {
                     return {
                         id: app.id,
                         descr: app.descr,
@@ -32,21 +32,21 @@ etc.express.get('/home', etc.authorized.can('access private page'), function (re
                         'FROM org_app ' +
                         'JOIN app ON app.id = org_app.app ' +
                         'JOIN org ON org.id = org_app.org ' +
-                        'ORDER BY app.creation', function(err, rows) {
-                            if(err){
+                        'ORDER BY app.creation', function (err, rows) {
+                            if (err) {
                                 return callback(err);
                             }
                             callback(null, rows.map(appMapper));
                         });
                 } else {
-                    etc.db.query('SELECT app.id app, org_app.id, app.icon, app.abbr, app.name descr, app_user.init, org.abbr orgAbbr, org.id orgId ' +
+                    etc.db.query('SELECT app.id app, org_app.id, app.icon, app.abbr, app.name descr, app_user.init, org.abbr orgAbbr, org.name orgName, org.id orgId ' +
                         'FROM app_user ' +
                         'JOIN org_app ON app_user.org_app = org_app.id ' +
                         'JOIN app ON app.id = org_app.app ' +
                         'JOIN org ON org.id = org_app.org ' +
                         'WHERE app_user.user = ? ' +
                         'ORDER BY init', [req.user.id], function (err, rows) {
-                            if(err){
+                            if (err) {
                                 return callback(err);
                             }
                             callback(null, rows.map(appMapper));
@@ -54,7 +54,7 @@ etc.express.get('/home', etc.authorized.can('access private page'), function (re
                 }
             }
         ],
-        function(err, apps){
+        function (err, apps) {
             if (err) {
                 console.log(err);
                 res.status(500).render('errors/500');

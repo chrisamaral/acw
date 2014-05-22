@@ -20,14 +20,27 @@ etc.express = express();
 etc.express.use(express.static(pub_dir));
 etc.express.use(bodyParser());
 etc.express.use(cookieParser());
+function dumpSession(header) {
+    return function (req, res, next) {
+        console.log('#################', header, '###############');
+        console.log(req.cookies, req.session, req.user, req.sessionID);
+        next();
+    };
+}
+
+//etc.express.use(dumpSession('pre-express-session'));
+
 etc.express.use(expressSession({
     secret: 'maiorsegredodomundo',
     key: 'acw.sid',
-    cookie: { maxAge: sessMaxAge },
+    cookie: {
+        maxAge: sessMaxAge,
+        domain: '.' + etc.DOMAIN
+    },
     //store: new XSession()
     store: etc.sessionStore
 }));
-
+//etc.express.use(dumpSession('post-express-session'));
 etc.express.use(connetFlash());
 etc.express.set('view engine', 'jade');
 
@@ -49,7 +62,7 @@ customAuth.init(function () {
     }
     etc.express.use(function (req, res, next) {
 
-        if(req.xhr){
+        if (req.xhr) {
             return res.send(404);
         }
 
@@ -72,10 +85,10 @@ customAuth.init(function () {
         }
 
         if (req.xhr) {
-            return res.send(401);
+            return res.send(403);
         }
 
-        res.status(401).render('errors/401');
+        res.status(403).render('errors/403');
     });
 
     etc.express.listen(4000);

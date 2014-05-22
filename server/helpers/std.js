@@ -17,13 +17,13 @@ function setLocals(req, res, page, view, title) {
         info: req.flash('info')
     };
 
-    var deps = pageDeps.defaults || {js: [], css: []};
+    var deps = pageDeps.defaults || {js: [], css: []}, n_deps;
 
     if (page && page !== '/') {
         deps = pageDeps[page] || deps;
     }
 
-    var n_deps = {
+    n_deps = {
         js: ((deps.js && deps.js.length)
             ? "['" + deps.js.concat().join("', '") + "']"
             : null),
@@ -36,7 +36,7 @@ function setLocals(req, res, page, view, title) {
     res.render(view);
 }
 
-function loadPages(req, res, page, view, title){
+function loadPages(req, res, page, view, title) {
     if (!req.isAuthenticated()) {
         return setLocals(req, res, page, view, title);
     }
@@ -83,19 +83,21 @@ exports.serveIt = function (view, page, req, res) {
 exports.uniqueID = function () {
     return String.fromCharCode(65 + Math.floor(Math.random() * 26)).toLowerCase() + Date.now().toString(36);
 };
+
 exports.escapeEmAll = function (a) {
     return a.map(function (elem) {
         return etc.db.escape(elem);
     });
 };
-exports.dMY_toDate = function(str) {
+
+exports.dMY_toDate = function (str) {
     var ds = str.split('/');
     return new Date(
         parseInt(ds[2], 10),
-            parseInt(ds[1], 10) - 1,
+        parseInt(ds[1], 10) - 1,
         parseInt(ds[0], 10),
         0,
         0,
         0
     );
-}
+};
