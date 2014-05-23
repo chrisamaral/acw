@@ -95,10 +95,13 @@ exports.getOrgApps = function (req, res) {
     );
 };
 exports.enableOrgApp = function (req, res) {
-    etc.db.query('INSERT INTO org_app (org, app, init) '+
+    etc.db.query('INSERT INTO org_app (org, app, init) ' +
         'VALUES (?, ?, ?)',
         [req.params.org, req.params.app, (new Date()).toYMD()],
         function (err, info) {
+            if (err) {
+                console.log(err);
+            }
             res.send(204);
         });
 };
@@ -106,10 +109,13 @@ exports.disableOrgApp = function (req, res) {
     etc.db.query('DELETE FROM org_app WHERE org = ? AND app = ? ',
         [req.params.org, req.params.app],
         function (err, info) {
+            if (err) {
+                console.log(err);
+            }
             res.send(204);
         });
 };
-exports.getUserOrgs = function(req, res){
+exports.getUserOrgs = function (req, res) {
     etc.db.query('SELECT org.id, org.abbr, org.name ' +
         'FROM org ' +
         'JOIN active_org ON org.id = active_org.org ' +
@@ -124,14 +130,14 @@ exports.getUserOrgs = function(req, res){
                 console.log(err);
                 return res.send(500);
             }
-            res.json(rows.map(function(row){
+            res.json(rows.map(function (row) {
                 row.active = true;
                 return row;
             }));
         });
 };
 
-exports.getUserOrgInfo = function(req, res){
+exports.getUserOrgInfo = function (req, res) {
     etc.db.query('SELECT ' +
             'org.id, org.name org, ' +
             'GROUP_CONCAT(DISTINCT role.descr SEPARATOR ", ") roles, ' +

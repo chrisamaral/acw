@@ -154,16 +154,43 @@ exports.getOrgUserApps = function (req, res) {
     );
 };
 exports.newUserApp = function (req, res) {
-    etc.db.query('INSERT INTO app_user (user, org_app, init) VALUES (?, ?, ?) ',
-        [req.params.user, req.params.org_app, (new Date()).toYMD()],
-        function(err, info){
-            if(err){
-                console.log(err);
-                return res.send(500);
+
+    function getOrgApp(callback) {
+        etc.db.query('SELECT org, app FROM org_app WHERE id = ? ', [req.params.org_app], function (err, rows) {
+
+            if (err) {
+                return  callback(err);
             }
-            res.send(204);
+
+            if (rows.length !== 1) {
+                return callback(null, null, null);
+            }
+
+            callback(null, rows[0].org, rows[0].app);
+        });
+    }
+
+    function insertAppUser(org, app, callback) {
+        etc.db.query('INSERT INTO app_user (user, org_app, init, org, app) VALUES (?, ?, ?, ?, ?) ',
+            [req.params.user, req.params.org_app, (new Date()).toYMD(), org, app],
+            function (err, info) {
+
+                if (err) {
+                    return callback(err);
+                }
+
+                callback();
+            });
+    }
+
+    async.waterfall([getOrgApp, insertAppUser], function (err, nope) {
+        if (err) {
+            console.log(err);
+            res.send(500);
         }
-    );
+        res.send(204);
+    });
+
 };
 exports.removeUserApp = function(req, res) {
     etc.db.query('DELETE FROM app_user WHERE org_app = ? AND user = ? ',
