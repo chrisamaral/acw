@@ -83,7 +83,8 @@ function setupAuth() {
     });
     etc.passport.deserializeUser(function (id, done) {
         etc.db.query(' SELECT user.id, user.short_name, user.full_name, user.avatar ' +
-                ' FROM  user ' +
+                ' FROM user ' +
+                ' JOIN active_user ON active_user.user = user.id ' +
                 ' WHERE user.id = ' + etc.db.escape(id),
             function (err, rows) {
                 if (err) {
