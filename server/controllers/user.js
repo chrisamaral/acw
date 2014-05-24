@@ -58,7 +58,7 @@ etc.express.post('/user/avatar', etc.authorized.can('access private page'), func
                     }
                     mkdirp(usrPath + '/thumb', function (err) {
                         gm(usrPath + '/1/' + fname)
-                            .thumb(64, 64, usrPath + '/thumb/' + fname, function (err) {
+                            .thumb(120, 120, usrPath + '/thumb/' + fname, function (err) {
                                 if (err) {
                                     return answerIt(500, 'Não foi possível salvar a nova foto, falha ao gerar miniatura');
                                 }
