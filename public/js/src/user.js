@@ -257,10 +257,6 @@
         $('#newPassword').on('input', strengthMeter);
     }
 
-    LazyLoad.js([
-        '/js/ext/validator.js/validator.min.js',
-        //'//dl.dropboxusercontent.com/u/209/zxcvbn/zxcvbn.js'
-        '/js/ext/zxcvbn/zxcvbn.js'
-    ], init);
+    window.onLoadRun = init;
 
 }(jQuery));

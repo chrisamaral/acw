@@ -1,0 +1,96 @@
+/*
+input[type="search"]{
+    width: 100%;
+    border: 1px solid rgb(220,220,220);
+    line-height: 2em;
+    text-indent: 5px;
+}
+*/
+.contentWrapper{
+    width: 95%;
+    margin: 0 auto;
+    min-height: 300px;
+    border: none !important;
+}
+.tab-pane{
+    min-height: 300px;
+    border: 1px solid rgb(220, 220, 220);
+    border-top: none;
+    padding: 2em;
+}
+
+.stdList{
+    min-height: 100px;
+    border: 1px solid rgb(220, 220, 220);
+    border-radius: 4px;
+
+}
+.stdList>.others, .stdList>a{
+    max-height: 30em;
+    overflow-y: auto;
+}
+
+.stdListItem{
+    border: none;
+    border-top: 1px solid rgb(220, 220, 220);
+}
+.stdListItem:first-child{
+    border-top: none;
+    padding-top: 1em;
+}
+.stdListItem:last-child{
+    padding-bottom: 1em;
+}
+.stdListItem.deleted-item{
+    opacity: 0.5;
+}
+.userAvatarThumb{
+    height: 100%;
+    width: 100%;
+    border-radius: 100%;
+}
+.userAvatarThumbContainer>span{
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.ContactList>li:first-child{
+    color: green;
+    font-weight: bold;
+    overflow-x: hidden;
+}
+.ExistingUserForm{
+    margin: 1em;
+}
+.iconPreview{
+    position: relative;
+    height: 400px;
+    line-height: 400px;
+    border-radius: 3px;
+    background-color: rgb(240,240,240);
+    margin: 5px 0;
+    text-align: center;
+}
+.helper {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+.iconPreview>img{
+    /*position: absolute;*/
+    vertical-align: middle;
+    max-height: 380px;
+    max-width: 40%;
+    border: dashed 1px rgb(100,100,100);
+}
+.formAlerts>div{
+    margin: 5px 0;
+}
+.iconPreview>.glyphicon{
+    font-size: 3em;
+    margin: 0 10px;
+}
+.row{
+    margin: 5px 0;
+}

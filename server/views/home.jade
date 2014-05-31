@@ -1,0 +1,19 @@
+include includes/head
+div.panel.panel-default.contentWrapper
+    div.panel-heading
+        h5 Bem vind@, #{user.full_name}
+    div.panel-body
+        div.row
+            each app in apps
+                div.col-xs-6.col-md-3
+                    div.thumbnail
+                        if app.icon
+                            img(src="#{app.icon}")
+                        else
+                            img(src="/img/none.png")
+                        div.caption
+                            h4
+                                a(href="#{app.link}") #{app.name}
+                            p #{app.descr}
+                            p(class='text-right', title="#{app.org.descr}")
+                                strong #{app.org.name}
