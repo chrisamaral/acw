@@ -17,6 +17,7 @@ var express = require('express'),
 
 etc.sessionStore = new RedisStore();
 etc.express = express();
+etc.express.set('json spaces', 2);
 etc.express.use(express.static(pub_dir));
 etc.express.use(bodyParser());
 etc.express.use(cookieParser());
